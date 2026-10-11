@@ -1,0 +1,36 @@
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #131316;
+  --foreground: #e4e1e6;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: 'Geist', sans-serif;
+  overflow-x: hidden;
+}
+
+/* Custom scrollbar untuk table & list */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1b1b1e;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #353438;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #534434;
+}
