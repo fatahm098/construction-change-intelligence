@@ -85,9 +85,39 @@ uvicorn app.main:app --reload --port 8000
 
 Dokumentasi interaktif Swagger API akan tersedia di: `http://localhost:8000/docs`.
 
+### Menjalankan Frontend (Next.js)
+
+```bash
+# 1. Buka terminal baru dan masuk ke direktori frontend
+cd frontend
+
+# 2. Install dependensi (jika belum)
+npm install
+
+# 3. Jalankan server development Next.js
+npm run dev
+```
+
+Aplikasi web akan dapat diakses di browser melalui: `http://localhost:3000`.
+
 ---
 
-## 4. Alur Kerja API (End-to-End)
+## 4. Fitur Antarmuka Pengguna (CAD-Grade Workspace)
+
+Desain frontend diadopsi dari workspace presisi tinggi **Google Stitch (Margin Guardian)**:
+- **Interactive CAD Canvas:** Menampilkan denah struktur dengan zoom/pan, layer toggle, serta hotspot interaktif bounding box merah (#ef4444) pada region perubahan.
+- **Change Inspector & AI Verification:**
+  - Kartu perbandingan citra *crop* penampang teknis sebelum vs sesudah (Rev 0 vs Rev 1).
+  - *Badge confidence* deteksi teks/dimensi teknik dari OCR.
+  - *Banner Semantic AI* yang menjelaskan konteks fungsional perubahan elemen.
+  - Form verifikasi parameter dimensi (panjang, lebar, tinggi efektif) untuk kalkulasi deterministik instan.
+  - Dropdown pemetaan ke baris pekerjaan BOQ/RAB yang relevan.
+- **Collapsible Variation Ledger (Drawer Bawah):** Tabel komparasi kuantitas kontrak vs revisi, selisih volume, dan akumulasi variasi biaya (*Cost Delta*).
+- **Ekspor Dokumen:** Tombol unduh laporan audit dalam format CSV.
+
+---
+
+## 5. Alur Kerja API (End-to-End)
 
 1. **Buat Proyek:** `POST /api/projects`
 2. **Upload Drawing Rev 0:** `POST /api/drawings/upload` (`file`: `drawing_rev0.pdf`, `revision`: `0`)
