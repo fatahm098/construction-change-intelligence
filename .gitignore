@@ -23,3 +23,11 @@ node_modules/
 *.log
 backend/data/analysis_runs/
 backend/data/uploads/
+
+# Environment
+.env
+.env.local
+*.env
+
+# Alembic
+backend/migrations/__pycache__/

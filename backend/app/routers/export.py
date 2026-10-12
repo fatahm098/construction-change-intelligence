@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
 from ..database import get_db
-from ..models import Project, AnalysisRun, ChangeRegion, RegionStatus
+from ..models import Project, AnalysisRun
 
 router = APIRouter(prefix="/api/export", tags=["Export"])
 

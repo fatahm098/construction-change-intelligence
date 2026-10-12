@@ -4,21 +4,22 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from .database import engine, Base
+from .kernel.config import settings
 from .routers import projects, drawings, analysis, boq, export
 
 # Buat semua tabel jika belum ada
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
-    title="Construction Change Intelligence API",
-    version="1.0.0",
+    title=settings.app_name,
+    version=settings.app_version,
     description="Sistem analisis perubahan gambar teknik konstruksi & estimasi dampak biaya deterministik.",
 )
 
-# CORS Middleware
+# CORS Middleware — allowlist dari env CORS_ORIGINS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=settings.cors_origin_list,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
