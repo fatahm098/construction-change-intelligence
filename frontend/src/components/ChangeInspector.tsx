@@ -108,7 +108,7 @@ export function ChangeInspector({
             REGION #{region.region_index}
           </span>
           <h2 className="text-sm font-semibold text-on-surface">
-            Inspeksi Kolom Grid B2 (K1)
+            Region #{region.region_index}
           </h2>
         </div>
         <span
@@ -131,7 +131,9 @@ export function ChangeInspector({
             Crop Penampang Teknis (Before vs After)
           </span>
           <span className="font-mono text-[10px] text-primary font-bold">
-            Δ Luas: +77.8%
+            {dimBeforeW > 0 && dimBeforeH > 0
+              ? `Δ Luas: ${(((dimAfterW * dimAfterH - dimBeforeW * dimBeforeH) / (dimBeforeW * dimBeforeH)) * 100).toFixed(1)}%`
+              : ""}
           </span>
         </div>
         <div className="grid grid-cols-2 gap-2">
@@ -139,7 +141,7 @@ export function ChangeInspector({
           <div className="flex flex-col bg-surface-container rounded p-2 border border-surface-container-high">
             <div className="flex items-center justify-between mb-1">
               <span className="font-mono text-[10px] text-error font-semibold">Rev. 0 Baseline</span>
-              <span className="font-mono text-[9px] text-on-surface-variant">Conf: 94%</span>
+              <span className="font-mono text-[9px] text-on-surface-variant">Rev. 0</span>
             </div>
             {/* SVG Visual Representation 300x300 */}
             <div className="relative w-full h-24 bg-surface-container-lowest rounded flex items-center justify-center border border-outline-variant/30">
@@ -161,7 +163,7 @@ export function ChangeInspector({
           <div className="flex flex-col bg-surface-container rounded p-2 border border-surface-container-high">
             <div className="flex items-center justify-between mb-1">
               <span className="font-mono text-[10px] text-secondary font-semibold">Rev. 1 Revised</span>
-              <span className="font-mono text-[9px] text-on-surface-variant">Conf: 96%</span>
+              <span className="font-mono text-[9px] text-on-surface-variant">Rev. 1</span>
             </div>
             {/* SVG Visual Representation 400x400 */}
             <div className="relative w-full h-24 bg-surface-container-lowest rounded flex items-center justify-center border border-outline-variant/30">
@@ -181,11 +183,14 @@ export function ChangeInspector({
         </div>
       </div>
 
-      {/* AI Semantic Context Banner */}
+      {/* Dimension Change Summary */}
       <div className="flex items-start gap-2 p-2.5 rounded bg-primary/10 border border-primary/20">
         <Sparkles className="w-4 h-4 text-primary shrink-0 mt-0.5" />
         <p className="text-xs text-on-surface leading-snug">
-          <strong className="text-primary font-medium">Analisis AI:</strong> Terjadi pembesaran penampang fisik kolom beton bertulang dari 300 mm menjadi 400 mm (+33.3% dimensi linear).
+          <strong className="text-primary font-medium">Ringkasan:</strong>{" "}
+          {dimBeforeW > 0 && dimAfterW > 0
+            ? `Dimensi berubah dari ${dimBeforeW}×${dimBeforeH}mm menjadi ${dimAfterW}×${dimAfterH}mm (${((dimAfterW - dimBeforeW) / dimBeforeW * 100).toFixed(1)}% lebar).`
+            : "Belum ada data dimensi."}
         </p>
       </div>
 

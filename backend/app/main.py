@@ -5,7 +5,7 @@ from fastapi.staticfiles import StaticFiles
 
 from .database import engine, Base
 from .kernel.config import settings
-from .routers import projects, drawings, analysis, boq, export
+from .modules.change_intel.router import routers as change_intel_routers
 
 # Buat semua tabel jika belum ada
 Base.metadata.create_all(bind=engine)
@@ -30,12 +30,9 @@ DATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data")
 os.makedirs(DATA_DIR, exist_ok=True)
 app.mount("/static/data", StaticFiles(directory=DATA_DIR), name="static_data")
 
-# Include Routers
-app.include_router(projects.router)
-app.include_router(drawings.router)
-app.include_router(analysis.router)
-app.include_router(boq.router)
-app.include_router(export.router)
+# Include Routers (module registry)
+for _router in change_intel_routers:
+    app.include_router(_router)
 
 
 @app.get("/health")

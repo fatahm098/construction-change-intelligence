@@ -71,6 +71,7 @@ export interface AnalysisRun {
   drawing_ref_id: number;
   drawing_rev_id: number;
   diff_image_path?: string;
+  diff_image_url?: string | null;
   total_regions: number;
   created_at: string;
   regions: ChangeRegion[];

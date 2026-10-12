@@ -53,3 +53,16 @@ export async function rejectRegion(regionId: number) {
 export function getExportCsvUrl(projectId: number) {
   return `${API_BASE}/api/export/csv/${projectId}`;
 }
+
+/**
+ * Konversi path file absolut (dari DB) ke URL yang dilayani via /static/data.
+ * Backend mount /static/data ke backend/data/.
+ */
+export function dataPathToUrl(absolutePath: string | undefined | null): string | null {
+  if (!absolutePath) return null;
+  const marker = "data/";
+  const idx = absolutePath.replace(/\\/g, "/").indexOf(marker);
+  if (idx === -1) return null;
+  const rel = absolutePath.replace(/\\/g, "/").slice(idx + marker.length);
+  return `${API_BASE}/static/data/${rel}`;
+}
