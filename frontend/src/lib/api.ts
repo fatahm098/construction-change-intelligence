@@ -1,11 +1,21 @@
 import type {
+  CheckResult,
+  Inspection,
+  InspectionCategory,
+  InspectionItem,
   Job,
   JobEnqueueResponse,
   LoginRequest,
   ProgressEntry,
   ProgressSummary,
+  QCSummary,
   RegisterRequest,
   RFI,
+  SafetyCategory,
+  SafetyReport,
+  SafetyStatus,
+  SafetySummary,
+  Severity,
   TokenResponse,
   User,
   VariationOrder,
@@ -388,5 +398,133 @@ export async function answerRFI(rfiId: number, answer: string): Promise<RFI> {
   if (!res.ok) {
     throw new Error(await readError(res, "Gagal menjawab RFI"));
   }
+  return res.json();
+}
+
+// --- QC / Mutu ---
+
+export async function fetchInspections(projectId: number): Promise<Inspection[]> {
+  const res = await fetch(`${API_BASE}/api/qc/${projectId}`, { cache: "no-store" });
+  if (!res.ok) throw new Error("Gagal mengambil daftar inspeksi");
+  return res.json();
+}
+
+export interface InspectionItemPayload {
+  description: string;
+  standard?: string;
+  result: CheckResult;
+  note?: string;
+}
+
+export interface InspectionCreatePayload {
+  inspection_number: string;
+  title: string;
+  location?: string;
+  category: InspectionCategory;
+  inspector?: string;
+  inspected_at?: string;
+  note?: string;
+  items: InspectionItemPayload[];
+}
+
+export async function createInspection(
+  projectId: number,
+  data: InspectionCreatePayload,
+): Promise<Inspection> {
+  const res = await fetch(`${API_BASE}/api/qc/${projectId}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    throw new Error(await readError(res, "Gagal membuat inspeksi"));
+  }
+  return res.json();
+}
+
+export async function fetchInspection(inspectionId: number): Promise<Inspection> {
+  const res = await fetch(`${API_BASE}/api/qc/inspection/${inspectionId}`, { cache: "no-store" });
+  if (!res.ok) throw new Error("Gagal mengambil detail inspeksi");
+  return res.json();
+}
+
+export interface InspectionItemUpdatePayload {
+  result?: CheckResult;
+  note?: string;
+}
+
+export async function updateInspectionItem(
+  itemId: number,
+  data: InspectionItemUpdatePayload,
+): Promise<InspectionItem> {
+  const res = await fetch(`${API_BASE}/api/qc/item/${itemId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    throw new Error(await readError(res, "Gagal memperbarui item inspeksi"));
+  }
+  return res.json();
+}
+
+export async function fetchQCSummary(projectId: number): Promise<QCSummary> {
+  const res = await fetch(`${API_BASE}/api/qc/summary/${projectId}`, { cache: "no-store" });
+  if (!res.ok) throw new Error("Gagal mengambil ringkasan QC");
+  return res.json();
+}
+
+// --- K3 / Safety ---
+
+export async function fetchSafetyReports(projectId: number): Promise<SafetyReport[]> {
+  const res = await fetch(`${API_BASE}/api/k3/${projectId}`, { cache: "no-store" });
+  if (!res.ok) throw new Error("Gagal mengambil daftar laporan K3");
+  return res.json();
+}
+
+export interface SafetyReportCreatePayload {
+  report_number: string;
+  title: string;
+  category: SafetyCategory;
+  severity: Severity;
+  description: string;
+  action_taken?: string;
+  reported_by?: string;
+  occurred_at?: string;
+}
+
+export async function createSafetyReport(
+  projectId: number,
+  data: SafetyReportCreatePayload,
+): Promise<SafetyReport> {
+  const res = await fetch(`${API_BASE}/api/k3/${projectId}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    throw new Error(await readError(res, "Gagal membuat laporan K3"));
+  }
+  return res.json();
+}
+
+export async function updateSafetyReportStatus(
+  reportId: number,
+  status: SafetyStatus,
+): Promise<SafetyReport> {
+  const res = await fetch(`${API_BASE}/api/k3/${reportId}/status`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status }),
+  });
+  if (!res.ok) {
+    throw new Error(await readError(res, "Gagal memperbarui status laporan K3"));
+  }
+  return res.json();
+}
+
+export async function fetchSafetySummary(projectId: number): Promise<SafetySummary> {
+  const res = await fetch(`${API_BASE}/api/k3/summary/${projectId}`, { cache: "no-store" });
+  if (!res.ok) throw new Error("Gagal mengambil ringkasan K3");
   return res.json();
 }

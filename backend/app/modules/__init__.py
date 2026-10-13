@@ -20,6 +20,9 @@ from .auth.router import routers as _auth_routers
 from .jobs.router import routers as _jobs_routers
 from .progress.router import router as _progress_router
 from .vo_rfi.router import router as _vo_rfi_router
+from .qc.router import router as _qc_router
+from .safety.router import router as _safety_router
+from .reports.router import router as _reports_router
 
 _MODULE_ROUTERS: list[APIRouter] = [
     *_change_intel_routers,
@@ -29,6 +32,9 @@ _MODULE_ROUTERS: list[APIRouter] = [
     *_jobs_routers,
     _progress_router,
     _vo_rfi_router,
+    _qc_router,
+    _safety_router,
+    _reports_router,
 ]
 
 

@@ -44,6 +44,8 @@ class Project(Base):
     progress_entries = relationship("ProgressEntry", back_populates="project", cascade="all, delete-orphan")
     variation_orders = relationship("VariationOrder", back_populates="project", cascade="all, delete-orphan")
     rfis = relationship("RFI", back_populates="project", cascade="all, delete-orphan")
+    inspections = relationship("Inspection", back_populates="project", cascade="all, delete-orphan")
+    safety_reports = relationship("SafetyReport", back_populates="project", cascade="all, delete-orphan")
 
 
 class Drawing(Base):
@@ -396,3 +398,101 @@ class RFI(Base):
     answered_at = Column(DateTime, nullable=True)
 
     project = relationship("Project", back_populates="rfis")
+
+
+class InspectionCategory(str, enum.Enum):
+    CONCRETE = "concrete"      # pekerjaan beton
+    REBAR = "rebar"            # pembesian
+    FORMWORK = "formwork"      # bekisting
+    OTHER = "other"
+
+
+class InspectionStatus(str, enum.Enum):
+    DRAFT = "draft"
+    PASSED = "passed"
+    FAILED = "failed"
+
+
+class CheckResult(str, enum.Enum):
+    OK = "ok"
+    NOT_OK = "not_ok"
+    NA = "na"
+
+
+class Inspection(Base):
+    """Berita acara inspeksi mutu (QC) untuk satu pekerjaan/elemen."""
+
+    __tablename__ = "inspections"
+
+    id = Column(Integer, primary_key=True, index=True)
+    project_id = Column(Integer, ForeignKey("projects.id"), nullable=False, index=True)
+    inspection_number = Column(String(50), nullable=False)
+    title = Column(String(255), nullable=False)
+    location = Column(String(255), nullable=True)
+    category = Column(Enum(InspectionCategory), default=InspectionCategory.OTHER)
+    status = Column(Enum(InspectionStatus), default=InspectionStatus.DRAFT, index=True)
+    inspector = Column(String(255), nullable=True)
+    inspected_at = Column(DateTime, nullable=True)
+    note = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    project = relationship("Project", back_populates="inspections")
+    items = relationship(
+        "InspectionItem", back_populates="inspection", cascade="all, delete-orphan"
+    )
+
+
+class InspectionItem(Base):
+    """Satu butir pemeriksaan dalam sebuah inspeksi (mis. SNI acuan + hasil)."""
+
+    __tablename__ = "inspection_items"
+
+    id = Column(Integer, primary_key=True, index=True)
+    inspection_id = Column(Integer, ForeignKey("inspections.id"), nullable=False, index=True)
+    description = Column(String(255), nullable=False)
+    standard = Column(String(100), nullable=True)  # acuan, mis. "SNI 2847:2019"
+    result = Column(Enum(CheckResult), default=CheckResult.OK)
+    note = Column(Text, nullable=True)
+
+    inspection = relationship("Inspection", back_populates="items")
+
+
+class SafetyCategory(str, enum.Enum):
+    INCIDENT = "incident"                 # kecelakaan
+    NEAR_MISS = "near_miss"               # hampir celaka
+    UNSAFE_ACT = "unsafe_act"             # tindakan tidak aman
+    UNSAFE_CONDITION = "unsafe_condition" # kondisi tidak aman
+
+
+class Severity(str, enum.Enum):
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+    CRITICAL = "critical"
+
+
+class SafetyStatus(str, enum.Enum):
+    OPEN = "open"
+    INVESTIGATING = "investigating"
+    CLOSED = "closed"
+
+
+class SafetyReport(Base):
+    """Laporan K3 (keselamatan & kesehatan kerja) proyek."""
+
+    __tablename__ = "safety_reports"
+
+    id = Column(Integer, primary_key=True, index=True)
+    project_id = Column(Integer, ForeignKey("projects.id"), nullable=False, index=True)
+    report_number = Column(String(50), nullable=False)
+    title = Column(String(255), nullable=False)
+    category = Column(Enum(SafetyCategory), default=SafetyCategory.INCIDENT)
+    severity = Column(Enum(Severity), default=Severity.LOW)
+    description = Column(Text, nullable=False)
+    action_taken = Column(Text, nullable=True)
+    status = Column(Enum(SafetyStatus), default=SafetyStatus.OPEN, index=True)
+    reported_by = Column(String(255), nullable=True)
+    occurred_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    project = relationship("Project", back_populates="safety_reports")

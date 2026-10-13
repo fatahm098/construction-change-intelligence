@@ -26,6 +26,15 @@ from .entities import (
     VOStatus,
     RFI,
     RFIStatus,
+    Inspection,
+    InspectionItem,
+    InspectionCategory,
+    InspectionStatus,
+    CheckResult,
+    SafetyReport,
+    SafetyCategory,
+    Severity,
+    SafetyStatus,
 )
 
 __all__ = [
@@ -56,4 +65,13 @@ __all__ = [
     "VOStatus",
     "RFI",
     "RFIStatus",
+    "Inspection",
+    "InspectionItem",
+    "InspectionCategory",
+    "InspectionStatus",
+    "CheckResult",
+    "SafetyReport",
+    "SafetyCategory",
+    "Severity",
+    "SafetyStatus",
 ]

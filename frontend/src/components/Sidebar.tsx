@@ -8,6 +8,8 @@ import {
   FileText,
   TrendingUp,
   FolderGit2,
+  ClipboardCheck,
+  ShieldAlert,
   Boxes,
 } from "lucide-react";
 
@@ -60,6 +62,22 @@ const MODULES: ModuleEntry[] = [
     icon: <FolderGit2 className="w-4 h-4" />,
     status: "active",
     description: "Variation order & request info",
+  },
+  {
+    id: "qc",
+    label: "QC / Mutu",
+    href: "/qc",
+    icon: <ClipboardCheck className="w-4 h-4" />,
+    status: "active",
+    description: "Inspeksi mutu & checklist",
+  },
+  {
+    id: "k3",
+    label: "K3 / Safety",
+    href: "/k3",
+    icon: <ShieldAlert className="w-4 h-4" />,
+    status: "active",
+    description: "Laporan keselamatan kerja",
   },
 ];
 

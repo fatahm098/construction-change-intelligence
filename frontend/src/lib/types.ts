@@ -307,3 +307,79 @@ export interface RFI {
   created_at: string;
   answered_at?: string | null;
 }
+
+// --- QC / Mutu ---
+
+export type InspectionCategory = "concrete" | "rebar" | "formwork" | "other";
+export type InspectionStatus = "draft" | "passed" | "failed";
+export type CheckResult = "ok" | "not_ok" | "na";
+
+export interface InspectionItem {
+  id: number;
+  inspection_id: number;
+  description: string;
+  standard?: string | null;
+  result: CheckResult;
+  note?: string | null;
+}
+
+export interface Inspection {
+  id: number;
+  project_id: number;
+  inspection_number: string;
+  title: string;
+  location?: string | null;
+  category: InspectionCategory;
+  status: InspectionStatus;
+  inspector?: string | null;
+  inspected_at?: string | null;
+  note?: string | null;
+  created_at: string;
+  items: InspectionItem[];
+}
+
+export interface QCSummary {
+  project_id: number;
+  total: number;
+  passed: number;
+  failed: number;
+  draft: number;
+  pass_rate: number;
+  total_items: number;
+  not_ok_items: number;
+}
+
+// --- K3 / Safety ---
+
+export type SafetyCategory = "incident" | "near_miss" | "unsafe_act" | "unsafe_condition";
+export type Severity = "low" | "medium" | "high" | "critical";
+export type SafetyStatus = "open" | "investigating" | "closed";
+
+export interface SafetyReport {
+  id: number;
+  project_id: number;
+  report_number: string;
+  title: string;
+  category: SafetyCategory;
+  severity: Severity;
+  description: string;
+  action_taken?: string | null;
+  status: SafetyStatus;
+  reported_by?: string | null;
+  occurred_at?: string | null;
+  created_at: string;
+}
+
+export interface SafetySummary {
+  project_id: number;
+  total: number;
+  open: number;
+  investigating: number;
+  closed: number;
+  by_severity: {
+    low: number;
+    medium: number;
+    high: number;
+    critical: number;
+  };
+}
