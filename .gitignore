@@ -32,3 +32,6 @@ backend/data/_test_*
 
 # Alembic
 backend/migrations/__pycache__/
+
+# Dokumen rujukan (PDF berhak cipta / besar) — jangan di-commit
+backend/data/reference/

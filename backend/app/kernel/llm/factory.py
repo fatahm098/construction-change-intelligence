@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from ..config import settings
 from .base import LLMProvider
+from .local import LocalProvider
 from .ollama import OllamaProvider
 from .openai import OpenAIProvider
 
@@ -14,6 +15,9 @@ from .openai import OpenAIProvider
 def get_llm_provider() -> LLMProvider:
     """Kembalikan provider LLM sesuai konfigurasi."""
     provider = settings.llm_provider.lower()
+
+    if provider == "local":
+        return LocalProvider()
 
     if provider == "ollama":
         return OllamaProvider(
@@ -34,5 +38,5 @@ def get_llm_provider() -> LLMProvider:
 
     raise ValueError(
         f"LLM provider '{settings.llm_provider}' tidak dikenal. "
-        "Pilihan: ollama, openai."
+        "Pilihan: local, ollama, openai."
     )
