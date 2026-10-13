@@ -42,7 +42,7 @@ const MODULES: ModuleEntry[] = [
     label: "BOQ & RAB",
     href: "/boq-rab",
     icon: <FileText className="w-4 h-4" />,
-    status: "soon",
+    status: "active",
     description: "Estimasi & AHSP Indonesia",
   },
   {

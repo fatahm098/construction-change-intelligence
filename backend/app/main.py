@@ -16,15 +16,22 @@ Base.metadata.create_all(bind=engine)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Rehidrasi vector store in-memory dari DB (hilang setiap restart).
+    from .models import AHSPItem
     from .modules.doc_qa.service import hydrate_vector_store
+    from .services.ahsp_seed import seed_ahsp
 
     db = SessionLocal()
     try:
         loaded = hydrate_vector_store(db)
         if loaded:
             print(f"[startup] vector store dihidrasi: {loaded} chunk")
+
+        # Seed katalog AHSP bila masih kosong (agar demo langsung jalan).
+        if db.query(AHSPItem).count() == 0:
+            seeded = seed_ahsp(db)
+            print(f"[startup] katalog AHSP di-seed: {seeded} item")
     except Exception as e:  # noqa: BLE001
-        print(f"[startup] gagal menghidrasi vector store: {e}")
+        print(f"[startup] gagal menyiapkan data awal: {e}")
     finally:
         db.close()
     yield

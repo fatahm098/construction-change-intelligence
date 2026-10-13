@@ -108,3 +108,41 @@ export async function sendChat(projectId: number, question: string, topK = 5) {
   }
   return res.json();
 }
+
+// --- BOQ & RAB (AHSP) ---
+
+export async function fetchRAB(projectId: number) {
+  const res = await fetch(`${API_BASE}/api/rab/${projectId}`, { cache: "no-store" });
+  if (!res.ok) throw new Error("Gagal mengambil data RAB");
+  return res.json();
+}
+
+export async function fetchAHSPList() {
+  const res = await fetch(`${API_BASE}/api/ahsp`, { cache: "no-store" });
+  if (!res.ok) throw new Error("Gagal mengambil katalog AHSP");
+  return res.json();
+}
+
+export async function fetchAHSPDetail(ahspId: number) {
+  const res = await fetch(`${API_BASE}/api/ahsp/${ahspId}`, { cache: "no-store" });
+  if (!res.ok) throw new Error("Gagal mengambil detail AHSP");
+  return res.json();
+}
+
+export async function suggestBOQ(regionId: number) {
+  const res = await fetch(`${API_BASE}/api/boq/suggest/${regionId}`, { cache: "no-store" });
+  if (!res.ok) throw new Error("Gagal mengambil rekomendasi BOQ");
+  return res.json();
+}
+
+export async function uploadBOQ(projectId: number, file: File) {
+  const form = new FormData();
+  form.append("project_id", String(projectId));
+  form.append("file", file);
+  const res = await fetch(`${API_BASE}/api/boq/upload`, { method: "POST", body: form });
+  if (!res.ok) {
+    const detail = await res.json().catch(() => ({}));
+    throw new Error(detail.detail || "Gagal mengunggah BOQ");
+  }
+  return res.json();
+}

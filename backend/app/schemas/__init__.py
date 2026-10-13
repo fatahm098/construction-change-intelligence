@@ -19,6 +19,13 @@ from .document import (
     ChatSource,
     ChatResponse,
 )
+from .boq_rab import (
+    AHSPComponentResponse,
+    AHSPItemResponse,
+    RABLineResponse,
+    RABResponse,
+    BOQSuggestionResponse,
+)
 
 __all__ = [
     "ProjectBase",
@@ -38,4 +45,9 @@ __all__ = [
     "ChatRequest",
     "ChatSource",
     "ChatResponse",
+    "AHSPComponentResponse",
+    "AHSPItemResponse",
+    "RABLineResponse",
+    "RABResponse",
+    "BOQSuggestionResponse",
 ]

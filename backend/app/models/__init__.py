@@ -14,6 +14,9 @@ from .entities import (
     Conversation,
     DocumentType,
     DocumentStatus,
+    AHSPItem,
+    AHSPComponent,
+    AHSPComponentType,
 )
 
 __all__ = [
@@ -32,4 +35,7 @@ __all__ = [
     "Conversation",
     "DocumentType",
     "DocumentStatus",
+    "AHSPItem",
+    "AHSPComponent",
+    "AHSPComponentType",
 ]

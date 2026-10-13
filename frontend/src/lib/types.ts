@@ -123,3 +123,64 @@ export interface ChatResponse {
   answer: string;
   sources: ChatSource[];
 }
+
+// --- BOQ & RAB (AHSP) ---
+
+export type AHSPComponentType = "labor" | "material" | "equipment";
+
+export interface AHSPComponent {
+  id: number;
+  component_type: AHSPComponentType;
+  name: string;
+  coefficient: number;
+  unit: string;
+  base_price: number;
+  subtotal: number;
+}
+
+export interface AHSPItem {
+  id: number;
+  code: string;
+  name: string;
+  unit: string;
+  category?: string | null;
+  unit_price: number;
+  components: AHSPComponent[];
+}
+
+export interface RABLine {
+  boq_item_id: number;
+  code: string;
+  description: string;
+  unit: string;
+  contract_volume: number;
+  delta_volume: number;
+  adjusted_volume: number;
+  unit_price: number;
+  contract_amount: number;
+  adjusted_amount: number;
+  delta_amount: number;
+  ahsp_item_id?: number | null;
+  ahsp_code?: string | null;
+}
+
+export interface RABResponse {
+  project_id: number;
+  project_name: string;
+  lines: RABLine[];
+  total_contract: number;
+  total_adjusted: number;
+  total_delta: number;
+  item_count: number;
+  verified_region_count: number;
+}
+
+export interface BOQSuggestion {
+  region_id: number;
+  element_type: string;
+  suggested_boq_item_id?: number | null;
+  suggested_code?: string | null;
+  suggested_description?: string | null;
+  unit_price?: number | null;
+  reason: string;
+}

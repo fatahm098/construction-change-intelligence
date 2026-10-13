@@ -130,9 +130,11 @@ class BOQItem(Base):
     unit = Column(String(20), nullable=False)
     contract_volume = Column(Float, default=0.0)
     unit_price = Column(Float, nullable=False)
+    ahsp_item_id = Column(Integer, ForeignKey("ahsp_items.id"), nullable=True)
 
     project = relationship("Project", back_populates="boq_items")
     cost_impacts = relationship("CostImpact", back_populates="boq_item")
+    ahsp_item = relationship("AHSPItem", back_populates="boq_items")
 
 
 class CostImpact(Base):
@@ -209,3 +211,51 @@ class Conversation(Base):
     answer = Column(Text, nullable=False)
     sources_json = Column(Text, nullable=True)  # JSON list[{filename, page, snippet, score}]
     created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class AHSPComponentType(str, enum.Enum):
+    LABOR = "labor"          # tenaga kerja
+    MATERIAL = "material"    # bahan
+    EQUIPMENT = "equipment"  # peralatan
+
+
+class AHSPItem(Base):
+    """Analisa Harga Satuan Pekerjaan (AHSP).
+
+    Harga satuan = Σ (koefisien × harga satuan dasar) dari seluruh komponen.
+    Perhitungan deterministik — tidak melibatkan LLM.
+    """
+
+    __tablename__ = "ahsp_items"
+
+    id = Column(Integer, primary_key=True, index=True)
+    code = Column(String(50), unique=True, nullable=False)
+    name = Column(String(255), nullable=False)
+    unit = Column(String(20), nullable=False)
+    category = Column(String(50), nullable=True)  # beton, besi, bekisting, dinding, dll.
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    components = relationship(
+        "AHSPComponent", back_populates="ahsp_item", cascade="all, delete-orphan"
+    )
+    boq_items = relationship("BOQItem", back_populates="ahsp_item")
+
+    @property
+    def unit_price(self) -> float:
+        return round(sum(c.coefficient * c.base_price for c in self.components), 2)
+
+
+class AHSPComponent(Base):
+    """Satu komponen (tenaga/bahan/alat) dalam sebuah AHSP."""
+
+    __tablename__ = "ahsp_components"
+
+    id = Column(Integer, primary_key=True, index=True)
+    ahsp_item_id = Column(Integer, ForeignKey("ahsp_items.id"), nullable=False)
+    component_type = Column(Enum(AHSPComponentType), nullable=False)
+    name = Column(String(255), nullable=False)
+    coefficient = Column(Float, nullable=False)
+    unit = Column(String(20), nullable=False)
+    base_price = Column(Float, nullable=False)  # harga satuan dasar
+
+    ahsp_item = relationship("AHSPItem", back_populates="components")
