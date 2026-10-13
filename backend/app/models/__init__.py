@@ -21,6 +21,11 @@ from .entities import (
     UserRole,
     Job,
     JobStatus,
+    ProgressEntry,
+    VariationOrder,
+    VOStatus,
+    RFI,
+    RFIStatus,
 )
 
 __all__ = [
@@ -46,4 +51,9 @@ __all__ = [
     "UserRole",
     "Job",
     "JobStatus",
+    "ProgressEntry",
+    "VariationOrder",
+    "VOStatus",
+    "RFI",
+    "RFIStatus",
 ]

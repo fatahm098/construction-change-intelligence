@@ -18,6 +18,8 @@ from .doc_qa.router import router as _doc_qa_router
 from .boq_rab.router import router as _boq_rab_router
 from .auth.router import routers as _auth_routers
 from .jobs.router import routers as _jobs_routers
+from .progress.router import router as _progress_router
+from .vo_rfi.router import router as _vo_rfi_router
 
 _MODULE_ROUTERS: list[APIRouter] = [
     *_change_intel_routers,
@@ -25,6 +27,8 @@ _MODULE_ROUTERS: list[APIRouter] = [
     _boq_rab_router,
     *_auth_routers,
     *_jobs_routers,
+    _progress_router,
+    _vo_rfi_router,
 ]
 
 

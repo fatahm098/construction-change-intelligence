@@ -236,3 +236,74 @@ export interface JobEnqueueResponse {
   status: JobStatus;
   message: string;
 }
+
+// --- Progress & EVM ---
+
+export interface ProgressPoint {
+  period: string;
+  planned_pct: number;
+  actual_pct: number;
+  planned_value: number;
+  earned_value: number;
+  actual_cost: number;
+}
+
+export interface ProgressSummary {
+  project_id: number;
+  project_name: string;
+  bac: number;
+  pv: number;
+  ev: number;
+  ac: number;
+  sv: number;
+  cv: number;
+  spi: number;
+  cpi: number;
+  eac: number;
+  etc: number;
+  vac: number;
+  progress_pct: number;
+  periods: ProgressPoint[];
+}
+
+export interface ProgressEntry {
+  id: number;
+  project_id: number;
+  period: string;
+  planned_pct: number;
+  actual_pct: number;
+  actual_cost: number;
+  note?: string | null;
+  created_at: string;
+}
+
+// --- VO & RFI ---
+
+export type VOStatus = "draft" | "submitted" | "approved" | "rejected";
+export type RFIStatus = "open" | "answered" | "closed";
+
+export interface VariationOrder {
+  id: number;
+  project_id: number;
+  vo_number: string;
+  title: string;
+  description?: string | null;
+  status: VOStatus;
+  amount: number;
+  change_region_id?: number | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface RFI {
+  id: number;
+  project_id: number;
+  rfi_number: string;
+  subject: string;
+  question: string;
+  answer?: string | null;
+  status: RFIStatus;
+  variation_order_id?: number | null;
+  created_at: string;
+  answered_at?: string | null;
+}

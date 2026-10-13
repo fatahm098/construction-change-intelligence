@@ -1,3 +1,4 @@
+import logging
 import os
 from contextlib import asynccontextmanager
 
@@ -7,7 +8,13 @@ from fastapi.staticfiles import StaticFiles
 
 from .database import SessionLocal, engine, Base
 from .kernel.config import settings
+from .kernel.observability import RequestContextMiddleware, setup_logging
+from .kernel.observability.health import readiness
 from .modules import get_module_routers
+
+# Logging terstruktur (JSON) — idempoten, aman dipanggil sebelum app dibuat.
+setup_logging()
+logger = logging.getLogger(__name__)
 
 # Buat semua tabel jika belum ada
 Base.metadata.create_all(bind=engine)
@@ -20,18 +27,20 @@ async def lifespan(app: FastAPI):
     from .modules.doc_qa.service import hydrate_vector_store
     from .services.ahsp_seed import seed_ahsp
 
+    setup_logging()  # pastikan konfigurasi log aktif saat startup
+
     db = SessionLocal()
     try:
         loaded = hydrate_vector_store(db)
         if loaded:
-            print(f"[startup] vector store dihidrasi: {loaded} chunk")
+            logger.info("vector store dihidrasi: %s chunk", loaded)
 
         # Seed katalog AHSP bila masih kosong (agar demo langsung jalan).
         if db.query(AHSPItem).count() == 0:
             seeded = seed_ahsp(db)
-            print(f"[startup] katalog AHSP di-seed: {seeded} item")
+            logger.info("katalog AHSP di-seed: %s item", seeded)
     except Exception as e:  # noqa: BLE001
-        print(f"[startup] gagal menyiapkan data awal: {e}")
+        logger.warning("gagal menyiapkan data awal: %s", e)
     finally:
         db.close()
     yield
@@ -53,6 +62,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Middleware konteks request (request-id) — dibungkus paling luar.
+app.add_middleware(RequestContextMiddleware)
+
 # Static files mounting untuk visualisasi gambar diff dan crops
 DATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data"))
 os.makedirs(DATA_DIR, exist_ok=True)
@@ -66,3 +78,9 @@ for _router in get_module_routers():
 @app.get("/health")
 def health_check():
     return {"status": "ok", "app": "Construction Change Intelligence API"}
+
+
+@app.get("/health/ready")
+def health_ready():
+    """Readiness probe: DB connectivity + status konfigurasi LLM."""
+    return readiness()

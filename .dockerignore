@@ -1,0 +1,34 @@
+# Docker ignore (repo root)
+# --- Python ---
+.venv/
+**/.venv/
+**/__pycache__/
+*.py[cod]
+*.db
+*.sqlite3
+.pytest_cache/
+.ruff_cache/
+
+# --- Node / Next.js ---
+node_modules/
+**/node_modules/
+.next/
+**/.next/
+out/
+**/out/
+
+# --- Data outputs ---
+backend/data/uploads
+backend/data/analysis_runs
+backend/data/_test_*
+
+# --- Env / VCS / docs ---
+.env
+.env.*
+.git/
+.gitignore
+.github/
+docs/
+samples/
+tasks/
+*.log

@@ -37,6 +37,20 @@ from .job import (
     JobResponse,
     JobEnqueueResponse,
 )
+from .progress import (
+    ProgressEntryCreate,
+    ProgressEntryResponse,
+    ProgressPointResponse,
+    ProgressSummaryResponse,
+)
+from .vo_rfi import (
+    VariationOrderCreate,
+    VariationOrderResponse,
+    VOStatusUpdate,
+    RFICreate,
+    RFIResponse,
+    RFIAnswerRequest,
+)
 
 __all__ = [
     "ProjectBase",
@@ -68,4 +82,14 @@ __all__ = [
     "AnalysisJobRequest",
     "JobResponse",
     "JobEnqueueResponse",
+    "ProgressEntryCreate",
+    "ProgressEntryResponse",
+    "ProgressPointResponse",
+    "ProgressSummaryResponse",
+    "VariationOrderCreate",
+    "VariationOrderResponse",
+    "VOStatusUpdate",
+    "RFICreate",
+    "RFIResponse",
+    "RFIAnswerRequest",
 ]

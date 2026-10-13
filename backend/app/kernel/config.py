@@ -55,6 +55,10 @@ class Settings(BaseSettings):
     redis_url: str = "redis://localhost:6379/0"
     jobs_enabled: bool = False  # True → analisis dijalankan async via worker
 
+    # --- Observability / logging ---
+    log_level: str = "INFO"  # DEBUG | INFO | WARNING | ERROR
+    log_json: bool = True  # True → log JSON terstruktur; False → teks (dev)
+
     @property
     def is_sqlite(self) -> bool:
         return self.database_url.startswith("sqlite")

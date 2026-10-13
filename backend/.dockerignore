@@ -1,0 +1,18 @@
+# Docker ignore (build context: ./backend)
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+*.db
+*.sqlite3
+data/uploads/
+data/analysis_runs/
+data/_test_*
+data/spike_output/
+tests/
+scripts/__pycache__/
+.env
+.env.*
+*.log

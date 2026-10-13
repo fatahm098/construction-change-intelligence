@@ -41,6 +41,9 @@ class Project(Base):
     boq_items = relationship("BOQItem", back_populates="project", cascade="all, delete-orphan")
     documents = relationship("Document", back_populates="project", cascade="all, delete-orphan")
     owner = relationship("User", back_populates="projects")
+    progress_entries = relationship("ProgressEntry", back_populates="project", cascade="all, delete-orphan")
+    variation_orders = relationship("VariationOrder", back_populates="project", cascade="all, delete-orphan")
+    rfis = relationship("RFI", back_populates="project", cascade="all, delete-orphan")
 
 
 class Drawing(Base):
@@ -321,3 +324,75 @@ class Job(Base):
             return json.loads(self.result_json)
         except (ValueError, TypeError):
             return None
+
+
+class ProgressEntry(Base):
+    """Catatan progres periodik untuk kurva-S & analisis Earned Value.
+
+    Semua angka bersifat kumulatif per periode. Perhitungan EVM deterministik
+    (bukan LLM) — lihat `modules/progress/service.py`.
+    """
+
+    __tablename__ = "progress_entries"
+
+    id = Column(Integer, primary_key=True, index=True)
+    project_id = Column(Integer, ForeignKey("projects.id"), nullable=False, index=True)
+    period = Column(String(20), nullable=False)  # label periode, mis. "2026-01"
+    planned_pct = Column(Float, default=0.0)     # % rencana kumulatif
+    actual_pct = Column(Float, default=0.0)      # % realisasi kumulatif
+    actual_cost = Column(Float, default=0.0)     # biaya aktual kumulatif (ACWP)
+    note = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    project = relationship("Project", back_populates="progress_entries")
+
+
+class VOStatus(str, enum.Enum):
+    DRAFT = "draft"
+    SUBMITTED = "submitted"
+    APPROVED = "approved"
+    REJECTED = "rejected"
+
+
+class VariationOrder(Base):
+    """Variation Order (perintah perubahan / CCO)."""
+
+    __tablename__ = "variation_orders"
+
+    id = Column(Integer, primary_key=True, index=True)
+    project_id = Column(Integer, ForeignKey("projects.id"), nullable=False, index=True)
+    vo_number = Column(String(50), nullable=False)
+    title = Column(String(255), nullable=False)
+    description = Column(Text, nullable=True)
+    status = Column(Enum(VOStatus), default=VOStatus.DRAFT, index=True)
+    amount = Column(Float, default=0.0)  # nilai VO (Rp, + menambah / - mengurangi)
+    change_region_id = Column(Integer, ForeignKey("change_regions.id"), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    project = relationship("Project", back_populates="variation_orders")
+
+
+class RFIStatus(str, enum.Enum):
+    OPEN = "open"
+    ANSWERED = "answered"
+    CLOSED = "closed"
+
+
+class RFI(Base):
+    """Request for Information — pertanyaan teknis/klarifikasi kontrak."""
+
+    __tablename__ = "rfis"
+
+    id = Column(Integer, primary_key=True, index=True)
+    project_id = Column(Integer, ForeignKey("projects.id"), nullable=False, index=True)
+    rfi_number = Column(String(50), nullable=False)
+    subject = Column(String(255), nullable=False)
+    question = Column(Text, nullable=False)
+    answer = Column(Text, nullable=True)
+    status = Column(Enum(RFIStatus), default=RFIStatus.OPEN, index=True)
+    variation_order_id = Column(Integer, ForeignKey("variation_orders.id"), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    answered_at = Column(DateTime, nullable=True)
+
+    project = relationship("Project", back_populates="rfis")

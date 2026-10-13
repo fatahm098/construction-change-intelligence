@@ -50,7 +50,7 @@ const MODULES: ModuleEntry[] = [
     label: "Progress & EVM",
     href: "/progress",
     icon: <TrendingUp className="w-4 h-4" />,
-    status: "soon",
+    status: "active",
     description: "Kurva-S & earned value",
   },
   {
@@ -58,7 +58,7 @@ const MODULES: ModuleEntry[] = [
     label: "VO & RFI",
     href: "/vo-rfi",
     icon: <FolderGit2 className="w-4 h-4" />,
-    status: "soon",
+    status: "active",
     description: "Variation order & request info",
   },
 ];

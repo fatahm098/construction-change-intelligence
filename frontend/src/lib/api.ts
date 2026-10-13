@@ -2,9 +2,14 @@ import type {
   Job,
   JobEnqueueResponse,
   LoginRequest,
+  ProgressEntry,
+  ProgressSummary,
   RegisterRequest,
+  RFI,
   TokenResponse,
   User,
+  VariationOrder,
+  VOStatus,
 } from "./types";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -274,6 +279,114 @@ export async function fetchJob(jobId: number): Promise<Job> {
   const res = await authFetch(`${API_BASE}/api/jobs/${jobId}`, { cache: "no-store" });
   if (!res.ok) {
     throw new Error(await readError(res, "Gagal mengambil status pekerjaan."));
+  }
+  return res.json();
+}
+
+// --- Fase 5: Progress & EVM ---
+
+export async function fetchProgress(projectId: number): Promise<ProgressSummary> {
+  const res = await fetch(`${API_BASE}/api/progress/${projectId}`, { cache: "no-store" });
+  if (!res.ok) throw new Error("Gagal mengambil data progress & EVM");
+  return res.json();
+}
+
+export interface ProgressEntryPayload {
+  period: string;
+  planned_pct: number;
+  actual_pct: number;
+  actual_cost: number;
+  note?: string;
+}
+
+export async function createProgressEntry(
+  projectId: number,
+  data: ProgressEntryPayload,
+): Promise<ProgressEntry> {
+  const res = await fetch(`${API_BASE}/api/progress/${projectId}/entries`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    throw new Error(await readError(res, "Gagal menyimpan entri progress"));
+  }
+  return res.json();
+}
+
+// --- Fase 5: Variation Order & RFI ---
+
+export async function fetchVOs(projectId: number): Promise<VariationOrder[]> {
+  const res = await fetch(`${API_BASE}/api/vo/${projectId}`, { cache: "no-store" });
+  if (!res.ok) throw new Error("Gagal mengambil daftar variation order");
+  return res.json();
+}
+
+export interface VOCreatePayload {
+  vo_number: string;
+  title: string;
+  description?: string;
+  amount: number;
+  change_region_id?: number;
+}
+
+export async function createVO(projectId: number, data: VOCreatePayload): Promise<VariationOrder> {
+  const res = await fetch(`${API_BASE}/api/vo/${projectId}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    throw new Error(await readError(res, "Gagal membuat variation order"));
+  }
+  return res.json();
+}
+
+export async function updateVOStatus(voId: number, status: VOStatus): Promise<VariationOrder> {
+  const res = await fetch(`${API_BASE}/api/vo/${voId}/status`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status }),
+  });
+  if (!res.ok) {
+    throw new Error(await readError(res, "Gagal memperbarui status variation order"));
+  }
+  return res.json();
+}
+
+export async function fetchRFIs(projectId: number): Promise<RFI[]> {
+  const res = await fetch(`${API_BASE}/api/rfi/${projectId}`, { cache: "no-store" });
+  if (!res.ok) throw new Error("Gagal mengambil daftar RFI");
+  return res.json();
+}
+
+export interface RFICreatePayload {
+  rfi_number: string;
+  subject: string;
+  question: string;
+  variation_order_id?: number;
+}
+
+export async function createRFI(projectId: number, data: RFICreatePayload): Promise<RFI> {
+  const res = await fetch(`${API_BASE}/api/rfi/${projectId}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    throw new Error(await readError(res, "Gagal membuat RFI"));
+  }
+  return res.json();
+}
+
+export async function answerRFI(rfiId: number, answer: string): Promise<RFI> {
+  const res = await fetch(`${API_BASE}/api/rfi/${rfiId}/answer`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ answer }),
+  });
+  if (!res.ok) {
+    throw new Error(await readError(res, "Gagal menjawab RFI"));
   }
   return res.json();
 }
