@@ -5,6 +5,7 @@ import { Header } from "@/components/Header";
 import { BlueprintCanvas } from "@/components/BlueprintCanvas";
 import { ChangeInspector } from "@/components/ChangeInspector";
 import { VariationLedger } from "@/components/VariationLedger";
+import { AsyncAnalysisButton } from "@/components/AsyncAnalysisButton";
 import {
   ProjectSummary,
   ChangeRegion,
@@ -96,6 +97,20 @@ export default function ChangeIntelPage() {
   return (
     <div className="flex flex-col h-full w-full overflow-hidden bg-surface text-on-surface">
       <Header summary={summary} activeDiffCount={regions.length} />
+
+      {runData && (
+        <div className="flex items-center justify-between border-b border-surface-container-high/40 bg-surface-container-lowest px-4 py-2">
+          <span className="font-mono text-[10px] uppercase tracking-widest text-on-surface-variant/60">
+            Analisis Latar Belakang
+          </span>
+          <AsyncAnalysisButton
+            projectId={projectId}
+            drawingRefId={runData.drawing_ref_id}
+            drawingRevId={runData.drawing_rev_id}
+            onComplete={loadData}
+          />
+        </div>
+      )}
 
       <div className="flex-1 flex overflow-hidden p-3 gap-3">
         <div className="flex-[68] h-full min-w-0">

@@ -34,13 +34,26 @@ class Settings(BaseSettings):
     # Daftar origin CORS dipisah koma. Contoh: "http://localhost:3000,https://app.example.com"
     cors_origins: str = "http://localhost:3000"
 
-    # Lapisan LLM (dipakai mulai Fase 2)
-    llm_provider: str = "ollama"
-    llm_model: str = "llama3.2:3b"
-    llm_base_url: str = "http://localhost:11434"
-    llm_embedding_model: str = "nomic-embed-text"
+    # Lapisan LLM (pluggable). Default: provider API (OpenAI-compatible).
+    llm_provider: str = "openai"
+    llm_model: str = "gpt-4o-mini"
+    llm_embedding_model: str = "text-embedding-3-small"
+    # Base URL untuk provider openai (bisa diarahkan ke endpoint OpenAI-compatible,
+    # mis. DeepSeek/Groq/OpenRouter). Untuk ollama, pakai ollama_base_url.
+    llm_base_url: str = "https://api.openai.com/v1"
+    ollama_base_url: str = "http://localhost:11434"
     openai_api_key: str | None = None
     anthropic_api_key: str | None = None
+
+    # --- Fase 4: Auth & multi-tenant ---
+    auth_enabled: bool = False  # aktifkan setelah user dibuat
+    jwt_secret: str = "dev-insecure-change-me"
+    jwt_algorithm: str = "HS256"
+    jwt_expire_minutes: int = 720
+
+    # --- Fase 4: Background jobs ---
+    redis_url: str = "redis://localhost:6379/0"
+    jobs_enabled: bool = False  # True → analisis dijalankan async via worker
 
     @property
     def is_sqlite(self) -> bool:

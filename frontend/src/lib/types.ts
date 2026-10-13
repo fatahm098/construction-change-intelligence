@@ -184,3 +184,55 @@ export interface BOQSuggestion {
   unit_price?: number | null;
   reason: string;
 }
+
+// --- Fase 4: Auth ---
+
+export type UserRole = "admin" | "engineer" | "viewer";
+
+export interface User {
+  id: number;
+  email: string;
+  full_name?: string | null;
+  role: UserRole;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface TokenResponse {
+  access_token: string;
+  token_type: string;
+  user: User;
+}
+
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface RegisterRequest {
+  email: string;
+  password: string;
+  full_name?: string | null;
+}
+
+// --- Fase 4: Background jobs ---
+
+export type JobStatus = "pending" | "running" | "success" | "failed";
+
+export interface Job {
+  id: number;
+  project_id?: number | null;
+  job_type: string;
+  status: JobStatus;
+  result?: unknown;
+  error_message?: string | null;
+  created_at: string;
+  started_at?: string | null;
+  finished_at?: string | null;
+}
+
+export interface JobEnqueueResponse {
+  job_id: number;
+  status: JobStatus;
+  message: string;
+}

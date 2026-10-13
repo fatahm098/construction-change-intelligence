@@ -26,6 +26,17 @@ from .boq_rab import (
     RABResponse,
     BOQSuggestionResponse,
 )
+from .auth import (
+    UserCreate,
+    LoginRequest,
+    UserResponse,
+    TokenResponse,
+)
+from .job import (
+    AnalysisJobRequest,
+    JobResponse,
+    JobEnqueueResponse,
+)
 
 __all__ = [
     "ProjectBase",
@@ -50,4 +61,11 @@ __all__ = [
     "RABLineResponse",
     "RABResponse",
     "BOQSuggestionResponse",
+    "UserCreate",
+    "LoginRequest",
+    "UserResponse",
+    "TokenResponse",
+    "AnalysisJobRequest",
+    "JobResponse",
+    "JobEnqueueResponse",
 ]

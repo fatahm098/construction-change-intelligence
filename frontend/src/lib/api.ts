@@ -1,4 +1,62 @@
+import type {
+  Job,
+  JobEnqueueResponse,
+  LoginRequest,
+  RegisterRequest,
+  TokenResponse,
+  User,
+} from "./types";
+
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
+// --- Token store (localStorage) ---
+
+const TOKEN_KEY = "mg_access_token";
+
+export function getToken(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    return window.localStorage.getItem(TOKEN_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function setToken(token: string): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(TOKEN_KEY, token);
+  } catch {
+    /* ignore quota / private mode */
+  }
+}
+
+export function clearToken(): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.removeItem(TOKEN_KEY);
+  } catch {
+    /* ignore */
+  }
+}
+
+/**
+ * fetch yang otomatis menambahkan header Authorization bila token tersedia.
+ * Endpoint lama tetap publik (auth_enabled=false), jadi tidak ada redirect paksa.
+ */
+export async function authFetch(input: string, init: RequestInit = {}): Promise<Response> {
+  const token = getToken();
+  const headers = new Headers(init.headers);
+  if (token && !headers.has("Authorization")) {
+    headers.set("Authorization", `Bearer ${token}`);
+  }
+  return fetch(input, { ...init, headers });
+}
+
+async function readError(res: Response, fallback: string): Promise<string> {
+  const detail = await res.json().catch(() => ({}));
+  return (detail && (detail.detail || detail.message)) || fallback;
+}
 
 export async function fetchProjects() {
   const res = await fetch(`${API_BASE}/api/projects`, { cache: "no-store" });
@@ -143,6 +201,79 @@ export async function uploadBOQ(projectId: number, file: File) {
   if (!res.ok) {
     const detail = await res.json().catch(() => ({}));
     throw new Error(detail.detail || "Gagal mengunggah BOQ");
+  }
+  return res.json();
+}
+
+// --- Fase 4: Auth ---
+
+export async function login(payload: LoginRequest): Promise<TokenResponse> {
+  const res = await fetch(`${API_BASE}/api/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    throw new Error(await readError(res, "Email atau password salah."));
+  }
+  const data: TokenResponse = await res.json();
+  setToken(data.access_token);
+  return data;
+}
+
+export async function register(payload: RegisterRequest): Promise<User> {
+  const res = await fetch(`${API_BASE}/api/auth/register`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    throw new Error(await readError(res, "Gagal mendaftar."));
+  }
+  return res.json();
+}
+
+export async function fetchMe(): Promise<User> {
+  const res = await authFetch(`${API_BASE}/api/auth/me`, { cache: "no-store" });
+  if (!res.ok) {
+    throw new Error(await readError(res, "Sesi tidak valid."));
+  }
+  return res.json();
+}
+
+export function logout(): void {
+  clearToken();
+}
+
+// --- Fase 4: Background jobs ---
+
+export interface EnqueueAnalysisPayload {
+  project_id: number;
+  drawing_ref_id: number;
+  drawing_rev_id: number;
+  min_area?: number;
+}
+
+/** Masukkan analisis gambar ke antrean background. */
+export async function enqueueAnalysisJob(
+  payload: EnqueueAnalysisPayload,
+): Promise<JobEnqueueResponse> {
+  const res = await authFetch(`${API_BASE}/api/jobs/analysis`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    throw new Error(await readError(res, "Gagal memasukkan pekerjaan ke antrean."));
+  }
+  return res.json();
+}
+
+/** Ambil status/ hasil sebuah job. */
+export async function fetchJob(jobId: number): Promise<Job> {
+  const res = await authFetch(`${API_BASE}/api/jobs/${jobId}`, { cache: "no-store" });
+  if (!res.ok) {
+    throw new Error(await readError(res, "Gagal mengambil status pekerjaan."));
   }
   return res.json();
 }

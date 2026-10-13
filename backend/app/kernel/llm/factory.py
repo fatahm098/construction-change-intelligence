@@ -17,7 +17,7 @@ def get_llm_provider() -> LLMProvider:
 
     if provider == "ollama":
         return OllamaProvider(
-            base_url=settings.llm_base_url,
+            base_url=settings.ollama_base_url,
             model=settings.llm_model,
             embedding_model=settings.llm_embedding_model,
         )
@@ -29,6 +29,7 @@ def get_llm_provider() -> LLMProvider:
             api_key=settings.openai_api_key,
             model=settings.llm_model,
             embedding_model=settings.llm_embedding_model,
+            base_url=settings.llm_base_url,
         )
 
     raise ValueError(

@@ -16,11 +16,15 @@ from fastapi import APIRouter
 from .change_intel.router import routers as _change_intel_routers
 from .doc_qa.router import router as _doc_qa_router
 from .boq_rab.router import router as _boq_rab_router
+from .auth.router import routers as _auth_routers
+from .jobs.router import routers as _jobs_routers
 
 _MODULE_ROUTERS: list[APIRouter] = [
     *_change_intel_routers,
     _doc_qa_router,
     _boq_rab_router,
+    *_auth_routers,
+    *_jobs_routers,
 ]
 
 

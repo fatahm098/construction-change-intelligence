@@ -1,4 +1,5 @@
 import enum
+import json
 from datetime import datetime
 from sqlalchemy import (
     Column,
@@ -33,11 +34,13 @@ class Project(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
+    owner_id = Column(Integer, ForeignKey("users.id"), nullable=True, index=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     drawings = relationship("Drawing", back_populates="project", cascade="all, delete-orphan")
     boq_items = relationship("BOQItem", back_populates="project", cascade="all, delete-orphan")
     documents = relationship("Document", back_populates="project", cascade="all, delete-orphan")
+    owner = relationship("User", back_populates="projects")
 
 
 class Drawing(Base):
@@ -259,3 +262,62 @@ class AHSPComponent(Base):
     base_price = Column(Float, nullable=False)  # harga satuan dasar
 
     ahsp_item = relationship("AHSPItem", back_populates="components")
+
+
+class UserRole(str, enum.Enum):
+    ADMIN = "admin"
+    ENGINEER = "engineer"
+    VIEWER = "viewer"
+
+
+class User(Base):
+    """Akun pengguna (Fase 4 — auth & multi-tenant)."""
+
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True)
+    email = Column(String(255), unique=True, nullable=False, index=True)
+    hashed_password = Column(String(255), nullable=False)
+    full_name = Column(String(255), nullable=True)
+    role = Column(Enum(UserRole), default=UserRole.ENGINEER)
+    is_active = Column(Integer, default=1)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    projects = relationship("Project", back_populates="owner")
+
+
+class JobStatus(str, enum.Enum):
+    PENDING = "pending"
+    RUNNING = "running"
+    SUCCESS = "success"
+    FAILED = "failed"
+
+
+class Job(Base):
+    """Pekerjaan latar belakang (Fase 4 — analisis async).
+
+    Dipakai agar endpoint berat (analisis gambar) tidak memblokir request.
+    """
+
+    __tablename__ = "jobs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    project_id = Column(Integer, ForeignKey("projects.id"), nullable=True, index=True)
+    job_type = Column(String(50), nullable=False)  # mis. "analysis_run"
+    status = Column(Enum(JobStatus), default=JobStatus.PENDING, index=True)
+    payload_json = Column(Text, nullable=True)   # input (JSON)
+    result_json = Column(Text, nullable=True)    # hasil (JSON)
+    error_message = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    started_at = Column(DateTime, nullable=True)
+    finished_at = Column(DateTime, nullable=True)
+
+    @property
+    def result(self):
+        """Hasil job sebagai objek Python (di-decode dari `result_json`)."""
+        if not self.result_json:
+            return None
+        try:
+            return json.loads(self.result_json)
+        except (ValueError, TypeError):
+            return None

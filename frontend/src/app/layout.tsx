@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Sidebar } from "@/components/Sidebar";
+import { AuthProvider } from "@/lib/auth";
 
 export const metadata: Metadata = {
   title: "Margin Guardian — Civil Engineering AI Platform",
@@ -16,10 +17,12 @@ export default function RootLayout({
   return (
     <html lang="id" className="dark">
       <body className="bg-surface text-on-surface antialiased">
-        <div className="flex h-screen w-screen overflow-hidden">
-          <Sidebar />
-          <main className="flex-1 min-w-0 overflow-hidden">{children}</main>
-        </div>
+        <AuthProvider>
+          <div className="flex h-screen w-screen overflow-hidden">
+            <Sidebar />
+            <main className="flex-1 min-w-0 overflow-hidden">{children}</main>
+          </div>
+        </AuthProvider>
       </body>
     </html>
   );

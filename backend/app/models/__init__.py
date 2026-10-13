@@ -17,6 +17,10 @@ from .entities import (
     AHSPItem,
     AHSPComponent,
     AHSPComponentType,
+    User,
+    UserRole,
+    Job,
+    JobStatus,
 )
 
 __all__ = [
@@ -38,4 +42,8 @@ __all__ = [
     "AHSPItem",
     "AHSPComponent",
     "AHSPComponentType",
+    "User",
+    "UserRole",
+    "Job",
+    "JobStatus",
 ]

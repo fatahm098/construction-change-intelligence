@@ -8,11 +8,39 @@ services:
       - "8000:8000"
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/construction_db
+      - REDIS_URL=redis://redis:6379/0
+      - JOBS_ENABLED=true
     volumes:
       - ./backend/data:/app/data
     depends_on:
       db:
         condition: service_healthy
+      redis:
+        condition: service_started
+
+  worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: construction-change-worker
+    command: arq app.kernel.jobs.worker.WorkerSettings
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/construction_db
+      - REDIS_URL=redis://redis:6379/0
+      - JOBS_ENABLED=true
+    volumes:
+      - ./backend/data:/app/data
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  redis:
+    image: redis:7-alpine
+    container_name: construction-change-redis
+    ports:
+      - "6379:6379"
 
   db:
     image: postgres:16-alpine

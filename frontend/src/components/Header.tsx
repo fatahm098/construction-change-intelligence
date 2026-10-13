@@ -3,6 +3,7 @@
 import React from "react";
 import { ProjectSummary } from "@/lib/types";
 import { getExportCsvUrl } from "@/lib/api";
+import { UserMenu } from "@/components/UserMenu";
 import { Download, Layers, ShieldCheck, AlertCircle, FileSpreadsheet } from "lucide-react";
 
 interface HeaderProps {
@@ -77,6 +78,11 @@ export function Header({ summary, activeDiffCount }: HeaderProps) {
             <Download className="w-3.5 h-3.5 text-primary" />
             <span>Ekspor CSV</span>
           </button>
+
+          {/* User Menu */}
+          <div className="ml-2">
+            <UserMenu />
+          </div>
         </div>
       </div>
     </header>
