@@ -496,3 +496,21 @@ class SafetyReport(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     project = relationship("Project", back_populates="safety_reports")
+
+
+class AppSetting(Base):
+    """Pengaturan runtime aplikasi (single-row, id=1).
+
+    Menyimpan pilihan provider LLM dan API key (terenkripsi). Kolom bernilai
+    kosong berarti "pakai default dari environment" — lihat `kernel.settings_store`.
+    """
+
+    __tablename__ = "app_settings"
+
+    id = Column(Integer, primary_key=True)
+    provider = Column(String(50), nullable=True)
+    model = Column(String(100), nullable=True)
+    base_url = Column(String(255), nullable=True)
+    embedding_model = Column(String(100), nullable=True)
+    api_key_encrypted = Column(Text, nullable=True)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

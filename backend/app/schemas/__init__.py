@@ -65,6 +65,11 @@ from .safety import (
     SafetyStatusUpdate,
     SafetySummaryResponse,
 )
+from .settings import (
+    LLMSettingsResponse,
+    LLMSettingsTestResponse,
+    LLMSettingsUpdateRequest,
+)
 
 __all__ = [
     "ProjectBase",
@@ -116,4 +121,7 @@ __all__ = [
     "SafetyReportResponse",
     "SafetyStatusUpdate",
     "SafetySummaryResponse",
+    "LLMSettingsResponse",
+    "LLMSettingsUpdateRequest",
+    "LLMSettingsTestResponse",
 ]

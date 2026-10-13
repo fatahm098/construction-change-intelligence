@@ -59,6 +59,11 @@ class Settings(BaseSettings):
     log_level: str = "INFO"  # DEBUG | INFO | WARNING | ERROR
     log_json: bool = True  # True → log JSON terstruktur; False → teks (dev)
 
+    # --- Pengaturan runtime (API key LLM) ---
+    # Kunci untuk enkripsi API key yang disimpan di DB. Bila None → diturunkan
+    # dari jwt_secret (fallback dev). Untuk produksi set eksplisit (string acak).
+    settings_encryption_key: str | None = None
+
     @property
     def is_sqlite(self) -> bool:
         return self.database_url.startswith("sqlite")

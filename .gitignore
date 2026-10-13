@@ -18,6 +18,7 @@ frontend/.next/
 frontend/out/
 node_modules/
 .next/
+*.tsbuildinfo
 
 # Data outputs & logs
 *.log

@@ -5,6 +5,9 @@ import type {
   InspectionItem,
   Job,
   JobEnqueueResponse,
+  LLMSettings,
+  LLMSettingsUpdate,
+  LLMTestResult,
   LoginRequest,
   ProgressEntry,
   ProgressSummary,
@@ -71,6 +74,22 @@ export async function authFetch(input: string, init: RequestInit = {}): Promise<
 async function readError(res: Response, fallback: string): Promise<string> {
   const detail = await res.json().catch(() => ({}));
   return (detail && (detail.detail || detail.message)) || fallback;
+}
+
+/** Error HTTP dengan kode status, agar UI bisa membedakan 401/403 dari error lain. */
+export class ApiError extends Error {
+  status: number;
+  constructor(message: string, status: number) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+  }
+}
+
+async function ensureOk(res: Response, fallback: string): Promise<void> {
+  if (!res.ok) {
+    throw new ApiError(await readError(res, fallback), res.status);
+  }
 }
 
 export async function fetchProjects() {
@@ -526,5 +545,40 @@ export async function updateSafetyReportStatus(
 export async function fetchSafetySummary(projectId: number): Promise<SafetySummary> {
   const res = await fetch(`${API_BASE}/api/k3/summary/${projectId}`, { cache: "no-store" });
   if (!res.ok) throw new Error("Gagal mengambil ringkasan K3");
+  return res.json();
+}
+
+// --- Pengaturan LLM (API key) — kontrak v1 ---
+
+/**
+ * Ambil pengaturan LLM aktif. Backend TIDAK pernah mengirim API key mentah —
+ * hanya `api_key_masked` (tersamarkan) + flag `has_api_key` + `source`.
+ */
+export async function fetchLLMSettings(): Promise<LLMSettings> {
+  const res = await authFetch(`${API_BASE}/api/settings/llm`, { cache: "no-store" });
+  await ensureOk(res, "Gagal mengambil pengaturan LLM.");
+  return res.json();
+}
+
+/**
+ * Simpan pengaturan LLM. Field `api_key` bersifat write-only:
+ * - `undefined`  → key tersimpan tidak diubah;
+ * - `""` (kosong) → HAPUS key tersimpan;
+ * - string lain  → ganti key dengan nilai baru.
+ */
+export async function updateLLMSettings(payload: LLMSettingsUpdate): Promise<LLMSettings> {
+  const res = await authFetch(`${API_BASE}/api/settings/llm`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  await ensureOk(res, "Gagal menyimpan pengaturan LLM.");
+  return res.json();
+}
+
+/** Uji koneksi ke provider LLM memakai pengaturan tersimpan. */
+export async function testLLMConnection(): Promise<LLMTestResult> {
+  const res = await authFetch(`${API_BASE}/api/settings/llm/test`, { method: "POST" });
+  await ensureOk(res, "Gagal menguji koneksi LLM.");
   return res.json();
 }

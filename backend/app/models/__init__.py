@@ -35,6 +35,7 @@ from .entities import (
     SafetyCategory,
     Severity,
     SafetyStatus,
+    AppSetting,
 )
 
 __all__ = [
@@ -74,4 +75,5 @@ __all__ = [
     "SafetyCategory",
     "Severity",
     "SafetyStatus",
+    "AppSetting",
 ]

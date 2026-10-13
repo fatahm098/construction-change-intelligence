@@ -237,6 +237,41 @@ export interface JobEnqueueResponse {
   message: string;
 }
 
+// --- Pengaturan LLM (API key) — kontrak v1 ---
+
+/** Sumber API key aktif: dari DB (diisi via UI), dari env, atau belum ada. */
+export type LLMKeySource = "db" | "env" | "none";
+
+export interface LLMSettings {
+  provider: string;
+  model: string;
+  base_url: string;
+  embedding_model: string;
+  /** True bila API key sudah tersimpan. Key mentah TIDAK pernah dikirim ke browser. */
+  has_api_key: boolean;
+  /** Bentuk tersamarkan, mis. "sk-…1234". Bukan key asli. Bisa null bila belum ada key. */
+  api_key_masked: string | null;
+  source: LLMKeySource;
+}
+
+export interface LLMSettingsUpdate {
+  provider?: string;
+  model?: string;
+  base_url?: string;
+  embedding_model?: string;
+  /**
+   * Write-only. `undefined` = jangan ubah key tersimpan.
+   * String kosong ("") = HAPUS key tersimpan.
+   */
+  api_key?: string;
+}
+
+export interface LLMTestResult {
+  ok: boolean;
+  message: string;
+  model: string;
+}
+
 // --- Progress & EVM ---
 
 export interface ProgressPoint {

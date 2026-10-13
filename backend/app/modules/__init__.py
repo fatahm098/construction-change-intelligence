@@ -23,6 +23,7 @@ from .vo_rfi.router import router as _vo_rfi_router
 from .qc.router import router as _qc_router
 from .safety.router import router as _safety_router
 from .reports.router import router as _reports_router
+from .settings.router import routers as _settings_routers
 
 _MODULE_ROUTERS: list[APIRouter] = [
     *_change_intel_routers,
@@ -35,6 +36,7 @@ _MODULE_ROUTERS: list[APIRouter] = [
     _qc_router,
     _safety_router,
     _reports_router,
+    *_settings_routers,
 ]
 
 

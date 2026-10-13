@@ -54,6 +54,27 @@ def get_current_user(
     return user
 
 
+def get_current_user_optional(
+    credentials: HTTPAuthorizationCredentials | None = Depends(_bearer),
+    db: Session = Depends(get_db),
+) -> User | None:
+    """Seperti `get_current_user`, tapi kembalikan None bila token tak ada/invalid.
+
+    Dipakai endpoint yang tetap harus jalan saat `auth_enabled=false`.
+    """
+    if credentials is None or not credentials.credentials:
+        return None
+    try:
+        payload = decode_access_token(credentials.credentials)
+        user_id = int(payload["sub"])
+    except Exception:  # noqa: BLE001 — token apa pun yang gagal → anggap anonim
+        return None
+    user = db.get(User, user_id)
+    if user is None or not user.is_active:
+        return None
+    return user
+
+
 def require_role(*roles: UserRole):
     """Factory dependency: izinkan hanya user dengan salah satu role tertentu.
 

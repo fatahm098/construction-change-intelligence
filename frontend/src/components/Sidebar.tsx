@@ -11,6 +11,7 @@ import {
   ClipboardCheck,
   ShieldAlert,
   Boxes,
+  Settings2,
 } from "lucide-react";
 
 interface ModuleEntry {
@@ -146,10 +147,27 @@ export function Sidebar() {
       </nav>
 
       {/* Footer */}
-      <div className="px-3 py-2 border-t border-surface-container-high/30">
-        <span className="font-mono text-[9px] text-on-surface-variant/40 tracking-wider">
-          v1.0.0-dev
-        </span>
+      <div className="px-2 py-2 border-t border-surface-container-high/30 space-y-1">
+        <Link
+          href="/settings"
+          className={`flex items-center gap-2.5 px-2.5 py-2 rounded-md transition-colors ${
+            pathname === "/settings" || pathname.startsWith("/settings/")
+              ? "bg-primary/10 border border-primary/20 text-primary"
+              : "hover:bg-surface-container-high/50 border border-transparent text-on-surface"
+          }`}
+        >
+          <Settings2
+            className={`w-4 h-4 ${
+              pathname === "/settings" ? "text-primary" : "text-on-surface-variant/70"
+            }`}
+          />
+          <span className="text-xs font-medium">Pengaturan</span>
+        </Link>
+        <div className="px-2.5 pt-1">
+          <span className="font-mono text-[9px] text-on-surface-variant/40 tracking-wider">
+            v1.0.0-dev
+          </span>
+        </div>
       </div>
     </aside>
   );
