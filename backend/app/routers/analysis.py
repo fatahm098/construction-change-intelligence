@@ -117,6 +117,22 @@ def run_analysis(
     return run_with_relations
 
 
+@router.get("/by-project/{project_id}", response_model=AnalysisRunResponse)
+def get_latest_run_for_project(project_id: int, db: Session = Depends(get_db)):
+    """Ambil analysis run terbaru untuk sebuah project."""
+    run = (
+        db.query(AnalysisRun)
+        .options(joinedload(AnalysisRun.regions).joinedload(ChangeRegion.verification))
+        .options(joinedload(AnalysisRun.regions).joinedload(ChangeRegion.cost_impact))
+        .filter(AnalysisRun.project_id == project_id)
+        .order_by(AnalysisRun.created_at.desc())
+        .first()
+    )
+    if not run:
+        raise HTTPException(status_code=404, detail="Belum ada analisis untuk project ini")
+    return run
+
+
 @router.get("/{run_id}", response_model=AnalysisRunResponse)
 def get_analysis_run(run_id: int, db: Session = Depends(get_db)):
     run = (

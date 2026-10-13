@@ -97,3 +97,29 @@ export interface ProjectSummary {
   total_cost_delta: number;
   boq_items_count: number;
 }
+
+export type DocumentType = "rks" | "kontrak" | "sni" | "ahsp" | "other";
+export type DocumentStatus = "pending" | "indexed" | "failed";
+
+export interface Document {
+  id: number;
+  project_id: number;
+  filename: string;
+  doc_type: DocumentType;
+  status: DocumentStatus;
+  num_chunks: number;
+  error_message?: string | null;
+  uploaded_at: string;
+}
+
+export interface ChatSource {
+  filename: string;
+  page?: number | null;
+  snippet: string;
+  score: number;
+}
+
+export interface ChatResponse {
+  answer: string;
+  sources: ChatSource[];
+}

@@ -9,6 +9,11 @@ from .entities import (
     CostImpact,
     RegionStatus,
     ElementType,
+    Document,
+    DocumentChunk,
+    Conversation,
+    DocumentType,
+    DocumentStatus,
 )
 
 __all__ = [
@@ -22,4 +27,9 @@ __all__ = [
     "CostImpact",
     "RegionStatus",
     "ElementType",
+    "Document",
+    "DocumentChunk",
+    "Conversation",
+    "DocumentType",
+    "DocumentStatus",
 ]

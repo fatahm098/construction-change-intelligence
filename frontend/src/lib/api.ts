@@ -18,6 +18,12 @@ export async function fetchAnalysisRun(runId: number) {
   return res.json();
 }
 
+export async function fetchLatestAnalysisRun(projectId: number) {
+  const res = await fetch(`${API_BASE}/api/analysis/by-project/${projectId}`, { cache: "no-store" });
+  if (!res.ok) throw new Error("Gagal mengambil analisis terbaru");
+  return res.json();
+}
+
 export async function fetchProjectBOQ(projectId: number) {
   const res = await fetch(`${API_BASE}/api/boq/by-project/${projectId}`, { cache: "no-store" });
   if (!res.ok) throw new Error("Gagal mengambil data BOQ");
@@ -65,4 +71,40 @@ export function dataPathToUrl(absolutePath: string | undefined | null): string |
   if (idx === -1) return null;
   const rel = absolutePath.replace(/\\/g, "/").slice(idx + marker.length);
   return `${API_BASE}/static/data/${rel}`;
+}
+
+// --- Document Q&A ---
+
+export async function fetchDocuments(projectId: number) {
+  const res = await fetch(`${API_BASE}/api/projects/${projectId}/documents`, { cache: "no-store" });
+  if (!res.ok) throw new Error("Gagal mengambil daftar dokumen");
+  return res.json();
+}
+
+export async function uploadDocument(projectId: number, file: File, docType: string) {
+  const form = new FormData();
+  form.append("file", file);
+  form.append("doc_type", docType);
+  const res = await fetch(`${API_BASE}/api/projects/${projectId}/documents`, {
+    method: "POST",
+    body: form,
+  });
+  if (!res.ok) {
+    const detail = await res.json().catch(() => ({}));
+    throw new Error(detail.detail || "Gagal mengunggah dokumen");
+  }
+  return res.json();
+}
+
+export async function sendChat(projectId: number, question: string, topK = 5) {
+  const res = await fetch(`${API_BASE}/api/projects/${projectId}/chat`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ question, top_k: topK }),
+  });
+  if (!res.ok) {
+    const detail = await res.json().catch(() => ({}));
+    throw new Error(detail.detail || "Gagal memproses pertanyaan");
+  }
+  return res.json();
 }

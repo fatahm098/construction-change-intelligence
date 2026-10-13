@@ -14,7 +14,7 @@ import {
 } from "@/lib/types";
 import {
   fetchProjectSummary,
-  fetchAnalysisRun,
+  fetchLatestAnalysisRun,
   fetchProjectBOQ,
   verifyDimension,
   rejectRegion,
@@ -34,7 +34,7 @@ export default function ChangeIntelPage() {
     try {
       const [sumData, run, boqData] = await Promise.all([
         fetchProjectSummary(projectId),
-        fetchAnalysisRun(projectId),
+        fetchLatestAnalysisRun(projectId),
         fetchProjectBOQ(projectId),
       ]);
 

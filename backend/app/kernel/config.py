@@ -36,8 +36,9 @@ class Settings(BaseSettings):
 
     # Lapisan LLM (dipakai mulai Fase 2)
     llm_provider: str = "ollama"
-    llm_model: str = "llama3.1"
+    llm_model: str = "llama3.2:3b"
     llm_base_url: str = "http://localhost:11434"
+    llm_embedding_model: str = "nomic-embed-text"
     openai_api_key: str | None = None
     anthropic_api_key: str | None = None
 

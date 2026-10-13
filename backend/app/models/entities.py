@@ -37,6 +37,7 @@ class Project(Base):
 
     drawings = relationship("Drawing", back_populates="project", cascade="all, delete-orphan")
     boq_items = relationship("BOQItem", back_populates="project", cascade="all, delete-orphan")
+    documents = relationship("Document", back_populates="project", cascade="all, delete-orphan")
 
 
 class Drawing(Base):
@@ -147,3 +148,64 @@ class CostImpact(Base):
 
     change_region = relationship("ChangeRegion", back_populates="cost_impact")
     boq_item = relationship("BOQItem", back_populates="cost_impacts")
+
+
+class DocumentType(str, enum.Enum):
+    RKS = "rks"          # Rencana Kerja & Syarat
+    KONTRAK = "kontrak"  # Dokumen kontrak
+    SNI = "sni"          # Standar nasional
+    AHSP = "ahsp"        # Analisa harga satuan
+    OTHER = "other"
+
+
+class DocumentStatus(str, enum.Enum):
+    PENDING = "pending"
+    INDEXED = "indexed"
+    FAILED = "failed"
+
+
+class Document(Base):
+    """Dokumen sumber (RKS/kontrak/SNI/AHSP) untuk RAG Document Q&A."""
+
+    __tablename__ = "documents"
+
+    id = Column(Integer, primary_key=True, index=True)
+    project_id = Column(Integer, ForeignKey("projects.id"), nullable=False)
+    filename = Column(String(255), nullable=False)
+    file_path = Column(String(500), nullable=False)
+    doc_type = Column(Enum(DocumentType), default=DocumentType.OTHER)
+    status = Column(Enum(DocumentStatus), default=DocumentStatus.PENDING)
+    num_chunks = Column(Integer, default=0)
+    error_message = Column(Text, nullable=True)
+    uploaded_at = Column(DateTime, default=datetime.utcnow)
+
+    project = relationship("Project", back_populates="documents")
+    chunks = relationship("DocumentChunk", back_populates="document", cascade="all, delete-orphan")
+
+
+class DocumentChunk(Base):
+    """Potongan teks dokumen + embedding (JSON) untuk pencarian semantik."""
+
+    __tablename__ = "document_chunks"
+
+    id = Column(Integer, primary_key=True, index=True)
+    document_id = Column(Integer, ForeignKey("documents.id"), nullable=False)
+    chunk_index = Column(Integer, nullable=False)
+    page = Column(Integer, nullable=True)
+    text = Column(Text, nullable=False)
+    embedding_json = Column(Text, nullable=True)  # JSON list[float]; ganti ke pgvector di produksi
+
+    document = relationship("Document", back_populates="chunks")
+
+
+class Conversation(Base):
+    """Riwayat percakapan Document Q&A per proyek."""
+
+    __tablename__ = "conversations"
+
+    id = Column(Integer, primary_key=True, index=True)
+    project_id = Column(Integer, ForeignKey("projects.id"), nullable=False)
+    question = Column(Text, nullable=False)
+    answer = Column(Text, nullable=False)
+    sources_json = Column(Text, nullable=True)  # JSON list[{filename, page, snippet, score}]
+    created_at = Column(DateTime, default=datetime.utcnow)

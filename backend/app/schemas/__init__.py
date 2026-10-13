@@ -13,6 +13,12 @@ from .project import (
     BOQItemResponse,
     ProjectSummaryResponse,
 )
+from .document import (
+    DocumentResponse,
+    ChatRequest,
+    ChatSource,
+    ChatResponse,
+)
 
 __all__ = [
     "ProjectBase",
@@ -28,4 +34,8 @@ __all__ = [
     "BOQItemCreate",
     "BOQItemResponse",
     "ProjectSummaryResponse",
+    "DocumentResponse",
+    "ChatRequest",
+    "ChatSource",
+    "ChatResponse",
 ]

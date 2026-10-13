@@ -34,7 +34,7 @@ const MODULES: ModuleEntry[] = [
     label: "Document Q&A",
     href: "/doc-qa",
     icon: <FileQuestion className="w-4 h-4" />,
-    status: "soon",
+    status: "active",
     description: "Chat RAG dokumen RKS/kontrak/SNI",
   },
   {
