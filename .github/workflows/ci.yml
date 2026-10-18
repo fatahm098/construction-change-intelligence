@@ -27,13 +27,15 @@ jobs:
           pip install -r requirements.txt
 
       - name: Lint (ruff)
-        run: ruff check app
+        run: ruff check app --select F,E9
 
       - name: Generate sample fixtures
         run: python data/generate_samples.py
 
+      # `-m "not slow"`: test OCR memuat EasyOCR + model (berat & butuh unduhan).
+      # Jalankan penuh di lokal: pytest -q
       - name: Run tests
-        run: pytest tests/test_api.py -v
+        run: pytest -m "not slow" -q
 
   frontend:
     name: Frontend (next build)

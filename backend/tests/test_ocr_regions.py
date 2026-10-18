@@ -19,6 +19,7 @@ PDF_REV_A = os.path.join(SAMPLES_DIR, "gambar_denah_rev_A.pdf")
 PDF_REV_B = os.path.join(SAMPLES_DIR, "gambar_denah_rev_B.pdf")
 
 
+@pytest.mark.slow
 def test_revision_b_region_has_400_candidate(tmp_path):
     if not (os.path.exists(PDF_REV_A) and os.path.exists(PDF_REV_B)):
         pytest.skip("sample gambar_denah_rev_A/B.pdf tidak tersedia")
@@ -49,6 +50,7 @@ def test_revision_b_region_has_400_candidate(tmp_path):
     assert (300, 300) in dims_v0
 
 
+@pytest.mark.slow
 def test_dimension_lines_without_element_label_are_ignored(tmp_path):
     if not os.path.exists(PDF_REV_B):
         pytest.skip("sample gambar_denah_rev_B.pdf tidak tersedia")
