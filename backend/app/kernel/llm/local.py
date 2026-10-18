@@ -5,7 +5,7 @@ tanpa memanggil layanan eksternal. Kualitasnya BUKAN semantik seperti model
 embedding sungguhan, melainkan kemiripan leksikal (kata/bigram) via hashing —
 cukup untuk menguji alur dan pencarian berbasis kata kunci.
 
-Untuk kualitas produksi, gunakan `LLM_PROVIDER=openai` (atau `ollama`).
+Untuk kualitas produksi, gunakan `LLM_PROVIDER=deepseek` (atau `ollama`).
 """
 
 from __future__ import annotations
@@ -82,8 +82,8 @@ class LocalProvider(LLMProvider):
         note = (
             "[Mode offline: LLM tidak dikonfigurasi, jadi ini BUKAN jawaban yang "
             "dirangkum AI — teks di bawah diambil langsung dari potongan dokumen "
-            "paling relevan. Set LLM_PROVIDER=openai + OPENAI_API_KEY untuk jawaban "
-            "yang dirangkum.]"
+            "paling relevan. Set LLM_PROVIDER=deepseek + DEEPSEEK_API_KEY untuk "
+            "jawaban yang dirangkum.]"
         )
         content = f"{note}\n\n{context[:2000]}"
         return ChatResult(content=content, model="local-extractive", provider=self.name)

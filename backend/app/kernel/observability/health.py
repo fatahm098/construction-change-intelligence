@@ -32,6 +32,8 @@ def check_llm() -> dict[str, Any]:
 
     if provider == "ollama":
         configured = bool(settings.ollama_base_url)
+    elif provider == "deepseek":
+        configured = bool(settings.deepseek_api_key or settings.openai_api_key)
     elif provider == "openai":
         configured = bool(settings.openai_api_key)
     else:

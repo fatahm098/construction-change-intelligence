@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from ..config import settings
 from .base import LLMProvider
+from .deepseek import DeepSeekProvider
 from .local import LocalProvider
 from .ollama import OllamaProvider
 from .openai import OpenAIProvider
@@ -59,7 +60,19 @@ def get_llm_provider() -> LLMProvider:
             base_url=cfg["base_url"],
         )
 
+    if provider == "deepseek":
+        if not cfg["api_key"]:
+            raise ValueError(
+                "DEEPSEEK_API_KEY belum diisi (env atau halaman Pengaturan)."
+            )
+        return DeepSeekProvider(
+            api_key=cfg["api_key"],
+            model=cfg["model"],
+            embedding_model=cfg["embedding_model"],
+            base_url=cfg["base_url"],
+        )
+
     raise ValueError(
         f"LLM provider '{cfg['provider']}' tidak dikenal. "
-        "Pilihan: local, ollama, openai."
+        "Pilihan: local, ollama, openai, deepseek."
     )

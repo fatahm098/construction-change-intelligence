@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 
 const PROVIDER_OPTIONS: { value: string; label: string }[] = [
+  { value: "deepseek", label: "DeepSeek" },
   { value: "openai", label: "OpenAI / OpenAI-compatible" },
   { value: "ollama", label: "Ollama (lokal)" },
   { value: "local", label: "Local (tanpa LLM)" },
@@ -45,7 +46,7 @@ export default function SettingsPage() {
   const [forbidden, setForbidden] = useState(false);
 
   // Form state
-  const [provider, setProvider] = useState("openai");
+  const [provider, setProvider] = useState("deepseek");
   const [model, setModel] = useState("");
   const [baseUrl, setBaseUrl] = useState("");
   const [embeddingModel, setEmbeddingModel] = useState("");
@@ -251,7 +252,7 @@ export default function SettingsPage() {
                   type="text"
                   value={model}
                   onChange={(e) => setModel(e.target.value)}
-                  placeholder="mis. gpt-4o-mini"
+                  placeholder="mis. deepseek-chat"
                   className="w-full rounded border border-surface-container-high bg-surface-container px-3 py-2 text-sm text-on-surface placeholder:text-on-surface-variant/40 focus:border-primary focus:outline-none"
                 />
               </div>
@@ -265,9 +266,12 @@ export default function SettingsPage() {
                   type="text"
                   value={embeddingModel}
                   onChange={(e) => setEmbeddingModel(e.target.value)}
-                  placeholder="mis. text-embedding-3-small"
+                  placeholder="mis. deepseek-embedding"
                   className="w-full rounded border border-surface-container-high bg-surface-container px-3 py-2 text-sm text-on-surface placeholder:text-on-surface-variant/40 focus:border-primary focus:outline-none"
                 />
+                <p className="mt-1 text-[10px] text-on-surface-variant/50">
+                  DeepSeek belum menyediakan endpoint embeddings; RAG memakai hashing lokal.
+                </p>
               </div>
 
               {/* Base URL */}
@@ -279,7 +283,7 @@ export default function SettingsPage() {
                   type="text"
                   value={baseUrl}
                   onChange={(e) => setBaseUrl(e.target.value)}
-                  placeholder="https://api.openai.com/v1"
+                  placeholder="https://api.deepseek.com/v1"
                   className="w-full rounded border border-surface-container-high bg-surface-container px-3 py-2 text-sm text-on-surface placeholder:text-on-surface-variant/40 focus:border-primary focus:outline-none"
                 />
                 <p className="mt-1 text-[10px] text-on-surface-variant/50">

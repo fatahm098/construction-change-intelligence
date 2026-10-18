@@ -16,7 +16,7 @@ _CONNECT_TIMEOUT = 8.0
 
 
 def test_connection(db: Session) -> LLMSettingsTestResponse:
-    """Cek provider aktif: lokal selalu siap; ollama/openai diuji via HTTP."""
+    """Cek provider aktif: lokal selalu siap; ollama/openai/deepseek via HTTP."""
     cfg = settings_store.effective_settings(db)
     provider = (cfg["provider"] or "").strip().lower()
     model = cfg["model"]
@@ -43,8 +43,8 @@ def test_connection(db: Session) -> LLMSettingsTestResponse:
             ok=False, message=f"Ollama membalas status {resp.status_code}.", model=model
         )
 
-    if provider == "openai":
-        api_key = settings_store.resolve_api_key(db)
+    if provider in ("openai", "deepseek"):
+        api_key = settings_store.resolve_api_key(db, provider)
         if not api_key:
             return LLMSettingsTestResponse(
                 ok=False, message="API key belum diisi.", model=model

@@ -34,15 +34,18 @@ class Settings(BaseSettings):
     # Daftar origin CORS dipisah koma. Contoh: "http://localhost:3000,https://app.example.com"
     cors_origins: str = "http://localhost:3000"
 
-    # Lapisan LLM (pluggable). Default: provider API (OpenAI-compatible).
-    llm_provider: str = "openai"
-    llm_model: str = "gpt-4o-mini"
-    llm_embedding_model: str = "text-embedding-3-small"
-    # Base URL untuk provider openai (bisa diarahkan ke endpoint OpenAI-compatible,
-    # mis. DeepSeek/Groq/OpenRouter). Untuk ollama, pakai ollama_base_url.
-    llm_base_url: str = "https://api.openai.com/v1"
+    # Lapisan LLM (pluggable). Default: DeepSeek (OpenAI-compatible).
+    llm_provider: str = "deepseek"
+    llm_model: str = "deepseek-chat"
+    # DeepSeek belum menyediakan endpoint embeddings; RAG memakai hashing lokal
+    # (lihat `kernel/llm/deepseek.py`). Nilai ini hanya informatif di UI.
+    llm_embedding_model: str = "deepseek-embedding"
+    # Base URL untuk provider OpenAI-compatible (default DeepSeek).
+    # Untuk ollama, pakai ollama_base_url.
+    llm_base_url: str = "https://api.deepseek.com/v1"
     ollama_base_url: str = "http://localhost:11434"
     openai_api_key: str | None = None
+    deepseek_api_key: str | None = None
     anthropic_api_key: str | None = None
 
     # --- Fase 4: Auth & multi-tenant ---

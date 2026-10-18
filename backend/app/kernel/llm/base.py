@@ -1,7 +1,7 @@
 """Abstraksi provider LLM.
 
 Semua provider harus mengimplementasikan `LLMProvider`. Ini memungkinkan
-penukaran provider (ollama/openai/anthropic) tanpa mengubah kode pemanggil.
+penukaran provider (deepseek/openai/ollama) tanpa mengubah kode pemanggil.
 """
 
 from __future__ import annotations

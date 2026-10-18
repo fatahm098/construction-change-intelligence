@@ -2,7 +2,8 @@
 
 Prioritas nilai: kolom DB → default environment (`settings`). API key disimpan
 terenkripsi (lihat `kernel.crypto`) dan hanya didekripsi di backend — tidak
-pernah dikirim ke klien.
+pernah dikirim ke klien. Key dari env mengikuti provider aktif
+(`DEEPSEEK_API_KEY` untuk deepseek, `OPENAI_API_KEY` untuk openai).
 """
 
 from __future__ import annotations
@@ -34,12 +35,23 @@ def _mask(secret: str) -> str:
     return f"{secret[:3]}...{secret[-4:]}"
 
 
+def _provider(row: AppSetting) -> str:
+    """Provider efektif: DB → env default."""
+    return (row.provider or settings.llm_provider).lower()
+
+
+def _env_api_key(provider: str) -> str | None:
+    """API key dari environment sesuai provider aktif."""
+    if (provider or "").lower() == "deepseek":
+        return settings.deepseek_api_key or settings.openai_api_key
+    return settings.openai_api_key
+
+
 def _effective_base_url(row: AppSetting) -> str:
     """base_url efektif: DB → env. Untuk provider ollama, fallback ke OLLAMA_BASE_URL."""
     if row.base_url:
         return row.base_url
-    provider = (row.provider or settings.llm_provider).lower()
-    if provider == "ollama":
+    if _provider(row) == "ollama":
         return settings.ollama_base_url
     return settings.llm_base_url
 
@@ -48,7 +60,7 @@ def _key_source(row: AppSetting) -> str:
     """Asal API key efektif: 'db' | 'env' | 'none'."""
     if row.api_key_encrypted:
         return "db"
-    if settings.openai_api_key:
+    if _env_api_key(_provider(row)):
         return "env"
     return "none"
 
@@ -57,7 +69,7 @@ def _effective_api_key(row: AppSetting) -> str | None:
     """API key efektif (didekripsi bila dari DB) — hanya untuk dipakai backend."""
     if row.api_key_encrypted:
         return decrypt_secret(row.api_key_encrypted)
-    return settings.openai_api_key
+    return _env_api_key(_provider(row))
 
 
 def effective_settings(db: Session) -> dict:
@@ -109,14 +121,16 @@ def update_settings(
     return effective_settings(db)
 
 
-def resolve_api_key(db: Session) -> str | None:
-    """API key efektif: DB (terenkripsi) → fallback `settings.openai_api_key`."""
+def resolve_api_key(db: Session, provider: str | None = None) -> str | None:
+    """API key efektif: DB (terenkripsi) → fallback env sesuai provider."""
     row = db.get(AppSetting, SINGLETON_ID)
     if row is not None and row.api_key_encrypted:
         key = decrypt_secret(row.api_key_encrypted)
         if key:
             return key
-    return settings.openai_api_key
+    if provider is None:
+        provider = _provider(row) if row is not None else settings.llm_provider
+    return _env_api_key(provider)
 
 
 def resolve_llm_config(db: Session) -> dict:
@@ -137,5 +151,5 @@ def resolve_llm_config(db: Session) -> dict:
         "base_url": base_url,
         "embedding_model": (row.embedding_model if row else None)
         or settings.llm_embedding_model,
-        "api_key": resolve_api_key(db),
+        "api_key": resolve_api_key(db, provider),
     }
