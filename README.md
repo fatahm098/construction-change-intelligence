@@ -159,6 +159,10 @@ alembic upgrade head
 uvicorn app.main:app --reload --port 8000
 ```
 
+> **Windows, cara tercepat:** setelah venv dan `npm install` selesai sekali,
+> klik dua kali **`start-web.bat`** di root repo. Backend (:8000) dan frontend
+> (:3000) menyala sekaligus, lalu browser terbuka otomatis.
+
 API docs: http://localhost:8000/docs · Health: http://localhost:8000/health
 
 ### Frontend
