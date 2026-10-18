@@ -20,5 +20,5 @@ class Embedder:
         return self.provider.embed(texts)
 
     def embed_query(self, text: str) -> list[float]:
-        vectors = self.provider.embed([text])
+        vectors = self.provider.embed_queries([text])
         return vectors[0] if vectors else []

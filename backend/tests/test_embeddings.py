@@ -146,3 +146,26 @@ def test_reindex_endpoint_on_empty_db(monkeypatch):
     assert body["chunks"] == 0
     assert body["provider"] == "hash"
     assert body["dimensions"] == 512
+
+
+# --- Provider open-source lokal (sentence-transformers) ----------------------
+
+
+@pytest.mark.slow
+def test_local_embedding_provider():
+    """Model open-source lokal: 384 dim, query & passage memakai prefiks E5."""
+    pytest.importorskip("sentence_transformers")
+
+    from app.kernel.llm.embedding import LocalEmbeddingProvider
+
+    provider = LocalEmbeddingProvider("intfloat/multilingual-e5-small")
+    docs = provider.embed(["Mutu beton kolom K-300 dengan fc' 24,9 MPa."])
+    query = provider.embed_queries(["berapa kuat tekan beton?"])
+
+    assert provider.dimensions == 384
+    assert len(docs[0]) == 384
+    assert len(query[0]) == 384
+    # Normalisasi L2 → panjang vektor mendekati 1.
+    assert abs(sum(v * v for v in docs[0]) - 1.0) < 0.01
+    # Query dan passage harus menghasilkan vektor berbeda untuk teks yang sama.
+    assert provider.embed(["teks uji"])[0] != provider.embed_queries(["teks uji"])[0]

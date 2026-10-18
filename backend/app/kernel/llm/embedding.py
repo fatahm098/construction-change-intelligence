@@ -1,11 +1,13 @@
 """Provider embedding yang dapat ditukar lewat konfigurasi.
 
-Dua implementasi:
+Tiga implementasi:
 
 - `HashEmbeddingProvider` — default offline, membungkus `local.hash_embedding`
-  (kemiripan leksikal, tanpa API key).
+  (kemiripan leksikal, tanpa API key, tanpa unduhan model).
+- `LocalEmbeddingProvider` — model open-source lewat `sentence-transformers`
+  (default: `intfloat/multilingual-e5-small`), jalan di CPU, gratis.
 - `OpenAICompatibleEmbeddingProvider` — endpoint `/embeddings` milik layanan
-  OpenAI-compatible (OpenAI, Together, dsb.) untuk embedding semantik.
+  OpenAI-compatible (OpenAI, Gemini, Together, dsb.).
 
 Dimensi vektor berbeda antar provider/model, sehingga korpus lama harus
 di-reindex setelah mengganti provider (lihat `POST /api/doc-qa/reindex`).
@@ -36,6 +38,14 @@ class EmbeddingProvider(ABC):
         """Kembalikan satu vektor untuk setiap teks (urutan dipertahankan)."""
         raise NotImplementedError
 
+    def embed_queries(self, texts: list[str]) -> list[list[float]]:
+        """Embedding untuk query pencarian.
+
+        Default sama dengan `embed`. Provider yang membedakan query dan dokumen
+        (mis. E5 memakai prefiks `query:` / `passage:`) menimpanya.
+        """
+        return self.embed(texts)
+
 
 class HashEmbeddingProvider(EmbeddingProvider):
     """Embedding hashing lokal — deterministik, tanpa panggilan jaringan."""
@@ -50,6 +60,58 @@ class HashEmbeddingProvider(EmbeddingProvider):
         if not texts:
             return []
         return [hash_embedding(text, self.dimensions) for text in texts]
+
+
+class LocalEmbeddingProvider(EmbeddingProvider):
+    """Embedding open-source via sentence-transformers (CPU, tanpa API key).
+
+    Default `intfloat/multilingual-e5-small` (±118 MB, 384 dimensi) yang
+    mendukung bahasa Indonesia. Model E5 mewajibkan prefiks `passage:` untuk
+    dokumen dan `query:` untuk pertanyaan — tanpa itu kualitas turun.
+    """
+
+    name = "local"
+
+    def __init__(self, model_name: str, *, batch_size: int = 32) -> None:
+        self.model = model_name
+        self.batch_size = batch_size
+        self._encoder = None
+        self._use_e5_prefix = "e5" in model_name.lower()
+
+    def _ensure_encoder(self):
+        if self._encoder is None:
+            try:
+                from sentence_transformers import SentenceTransformer
+            except ImportError as exc:  # pragma: no cover - bergantung lingkungan
+                raise RuntimeError(
+                    "sentence-transformers belum terpasang. Jalankan: "
+                    "pip install sentence-transformers"
+                ) from exc
+            self._encoder = SentenceTransformer(self.model, device="cpu")
+            self.dimensions = self._encoder.get_sentence_embedding_dimension()
+        return self._encoder
+
+    def _encode(self, texts: list[str], *, is_query: bool) -> list[list[float]]:
+        if not texts:
+            return []
+        encoder = self._ensure_encoder()
+        prefix = ""
+        if self._use_e5_prefix:
+            prefix = "query: " if is_query else "passage: "
+        vectors = encoder.encode(
+            [f"{prefix}{text}" for text in texts],
+            batch_size=self.batch_size,
+            normalize_embeddings=True,
+            convert_to_numpy=True,
+            show_progress_bar=False,
+        )
+        return [vector.tolist() for vector in vectors]
+
+    def embed(self, texts: list[str]) -> list[list[float]]:
+        return self._encode(texts, is_query=False)
+
+    def embed_queries(self, texts: list[str]) -> list[list[float]]:
+        return self._encode(texts, is_query=True)
 
 
 class OpenAICompatibleEmbeddingProvider(EmbeddingProvider):
@@ -118,6 +180,9 @@ class OpenAICompatibleEmbeddingProvider(EmbeddingProvider):
 def get_embedding_provider() -> EmbeddingProvider:
     """Provider embedding sesuai config; default/fallback ke hashing lokal."""
     provider = (settings.embedding_provider or "hash").strip().lower()
+
+    if provider == "local":
+        return LocalEmbeddingProvider(settings.embedding_local_model)
 
     if provider == "openai":
         api_key = settings.embedding_api_key or settings.openai_api_key

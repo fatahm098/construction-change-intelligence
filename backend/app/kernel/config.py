@@ -50,6 +50,9 @@ class Settings(BaseSettings):
     embedding_base_url: str = "https://api.openai.com/v1"
     embedding_model: str = "text-embedding-3-small"
     embedding_api_key: str | None = None
+    # Model open-source untuk EMBEDDING_PROVIDER=local (sentence-transformers).
+    # multilingual-e5-small: ±118 MB, 384 dimensi, mendukung bahasa Indonesia.
+    embedding_local_model: str = "intfloat/multilingual-e5-small"
     ollama_base_url: str = "http://localhost:11434"
     openai_api_key: str | None = None
     deepseek_api_key: str | None = None

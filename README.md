@@ -122,7 +122,7 @@ construction-change-intelligence/
 │   │   │   ├── qc/  safety/  reports/  settings/  auth/  jobs/
 │   │   └── services/               # pdf, vision, ocr, calc, boq, ahsp_seed
 │   ├── migrations/                 # Alembic
-│   ├── tests/                      # pytest (23 test)
+│   ├── tests/                      # pytest (24 test)
 │   ├── scripts/                    # seed_demo.py, seed_ahsp.py, test_rag.py (manual)
 │   ├── data/reference/             # PDF regulasi (tidak di-commit, ~45 MB)
 │   ├── pytest.ini  ruff.toml  Dockerfile  requirements.txt
@@ -245,8 +245,9 @@ backend/.venv/Scripts/python.exe samples/generate_samples.py
 | `LLM_MODEL` | `deepseek-chat` | Model chat |
 | `LLM_BASE_URL` | `https://api.deepseek.com/v1` | Endpoint OpenAI-compatible |
 | `DEEPSEEK_API_KEY` / `OPENAI_API_KEY` | — | Kunci provider (bisa juga via UI) |
-| `EMBEDDING_PROVIDER` | `hash` | `hash` (offline) \| `openai` (semantik) |
-| `EMBEDDING_MODEL` | `text-embedding-3-small` | Model embedding |
+| `EMBEDDING_PROVIDER` | `hash` | `hash` (leksikal) \| `local` (open-source, CPU) \| `openai` (API) |
+| `EMBEDDING_LOCAL_MODEL` | `intfloat/multilingual-e5-small` | Model untuk provider `local` (±118 MB, 384 dim) |
+| `EMBEDDING_MODEL` | `text-embedding-3-small` | Model untuk provider `openai` |
 | `EMBEDDING_API_KEY` | — | Kosong = fallback `OPENAI_API_KEY` |
 | `AUTH_ENABLED` | `false` | `true` = seluruh API wajib JWT |
 | `JWT_SECRET` | — | **Wajib diganti di produksi** |
@@ -263,6 +264,39 @@ ulang:
 curl -X POST http://localhost:8000/api/doc-qa/reindex \
   -H "Authorization: Bearer <token>"
 ```
+
+Untuk pencarian semantik tanpa biaya API, pakai model open-source lokal:
+
+```env
+EMBEDDING_PROVIDER=local
+EMBEDDING_LOCAL_MODEL=intfloat/multilingual-e5-small
+```
+
+Model diunduh sekali ke cache Hugging Face (±118 MB), lalu jalan di CPU.
+Naikkan ke `intfloat/multilingual-e5-base` (±278 MB, 768 dim) bila butuh akurasi
+lebih tinggi dan tidak masalah lebih lambat.
+
+### Model chat lokal (gratis) untuk uji coba
+
+Semua model di bawah berjalan lewat **Ollama** (`LLM_PROVIDER=ollama`,
+`OLLAMA_BASE_URL=http://localhost:11434`, isi `LLM_MODEL` sesuai nama model).
+Cocok untuk laptop 16 GB tanpa GPU; kecepatan diukur kasar pada CPU 4 core.
+
+| Model | Unduhan | RAM | Kecepatan | Bahasa Indonesia | Cocok untuk |
+|---|---|---|---|---|---|
+| `qwen2.5:3b` | ±1,9 GB | ±4 GB | ±8 tok/s | Baik | **Pilihan utama** untuk uji cepat |
+| `llama3.2:3b` | ±2,0 GB | ±4 GB | ±8 tok/s | Cukup | Instruksi umum, ringkasan |
+| `gemma2:2b` | ±1,6 GB | ±3 GB | ±12 tok/s | Cukup | Laptop RAM kecil |
+| `qwen2.5:7b` | ±4,7 GB | ±8 GB | ±3 tok/s | Sangat baik | Jawaban akhir yang lebih rapi |
+| `mistral:7b` | ±4,1 GB | ±8 GB | ±3 tok/s | Kurang | Bahasa Inggris |
+
+```bash
+ollama pull qwen2.5:3b
+# lalu di halaman Pengaturan: provider=ollama, model=qwen2.5:3b
+```
+
+Catatan: embedding **tidak** ikut ke Ollama — RAG memakai
+`EMBEDDING_PROVIDER=local` (sentence-transformers) atau `hash`.
 
 ---
 
@@ -300,7 +334,7 @@ DATABASE_URL=sqlite:///./tmp_test.db ./.venv/Scripts/python.exe -m pytest -q
 rm -f tmp_test.db
 ```
 
-Cakupan saat ini: 23 test (alur end-to-end proyek, job async, settings/API key,
+Cakupan saat ini: 24 test (alur end-to-end proyek, job async, settings/API key,
 gerbang auth, embedding + reindex, OCR per region dengan sample gambar).
 
 Frontend:
