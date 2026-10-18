@@ -1,14 +1,18 @@
-"""Embedder — membungkus provider LLM untuk menghasilkan embedding."""
+"""Embedder — membungkus provider embedding untuk menghasilkan vektor."""
 
 from __future__ import annotations
 
-from ..llm.base import LLMProvider
-from ..llm.factory import get_llm_provider
+from ..llm.embedding import EmbeddingProvider, get_embedding_provider
 
 
 class Embedder:
-    def __init__(self, provider: LLMProvider | None = None) -> None:
-        self.provider = provider or get_llm_provider()
+    def __init__(self, provider: EmbeddingProvider | None = None) -> None:
+        # Pemanggil lama (Retriever) mengoper LLMProvider sebagai argumen posisi;
+        # itu bukan provider embedding, jadi diabaikan dan config yang dipakai.
+        if isinstance(provider, EmbeddingProvider):
+            self.provider = provider
+        else:
+            self.provider = get_embedding_provider()
 
     def embed_texts(self, texts: list[str]) -> list[list[float]]:
         if not texts:

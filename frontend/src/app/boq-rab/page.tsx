@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from "react";
 import { RABResponse, AHSPItem, AHSPComponent } from "@/lib/types";
 import { fetchRAB, fetchAHSPList, fetchAHSPDetail, uploadBOQ } from "@/lib/api";
+import { downloadReport } from "@/lib/reports";
+import type { ReportFormat } from "@/lib/reports";
 import {
   FileSpreadsheet,
   Upload,
@@ -11,6 +13,7 @@ import {
   HardHat,
   Package,
   Wrench,
+  Download,
 } from "lucide-react";
 
 const formatIDR = (val: number) =>
@@ -27,13 +30,16 @@ const TYPE_META: Record<string, { label: string; icon: React.ReactNode; color: s
 };
 
 export default function BoqRabPage() {
-  const [projectId] = useState<number>(1);
+  const [projectId] = useState<number | null>(1);
   const [rab, setRab] = useState<RABResponse | null>(null);
   const [ahspList, setAhspList] = useState<AHSPItem[]>([]);
   const [ahspDetail, setAhspDetail] = useState<AHSPItem | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [downloading, setDownloading] = useState<ReportFormat | null>(null);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
 
   const loadData = async () => {
+    if (projectId == null) return;
     try {
       const [rabData, ahspData] = await Promise.all([fetchRAB(projectId), fetchAHSPList()]);
       setRab(rabData);
@@ -47,6 +53,19 @@ export default function BoqRabPage() {
     loadData();
   }, [projectId]);
 
+  const handleDownload = async (format: ReportFormat) => {
+    if (projectId == null) return;
+    setDownloading(format);
+    setDownloadError(null);
+    try {
+      await downloadReport(projectId, "rab", format);
+    } catch (err) {
+      setDownloadError(err instanceof Error ? err.message : "Gagal mengunduh laporan RAB.");
+    } finally {
+      setDownloading(null);
+    }
+  };
+
   const handleSelectAHSP = async (id: number) => {
     try {
       const detail = await fetchAHSPDetail(id);
@@ -58,7 +77,7 @@ export default function BoqRabPage() {
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file || projectId == null) return;
     setUploading(true);
     try {
       await uploadBOQ(projectId, file);
@@ -120,8 +139,32 @@ export default function BoqRabPage() {
                 disabled={uploading}
               />
             </label>
+
+            <button
+              onClick={() => handleDownload("xlsx")}
+              disabled={downloading !== null || projectId == null}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-primary-container/20 hover:bg-primary-container/30 text-primary text-xs font-medium transition-colors border border-primary/30 disabled:opacity-50"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>{downloading === "xlsx" ? "Menyiapkan…" : "Unduh RAB (Excel)"}</span>
+            </button>
+
+            <button
+              onClick={() => handleDownload("pdf")}
+              disabled={downloading !== null || projectId == null}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-primary-container/20 hover:bg-primary-container/30 text-primary text-xs font-medium transition-colors border border-primary/30 disabled:opacity-50"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>{downloading === "pdf" ? "Menyiapkan…" : "Unduh RAB (PDF)"}</span>
+            </button>
           </div>
         </div>
+
+        {downloadError && (
+          <div className="mt-2 px-3 py-1.5 rounded bg-error-container/30 border border-error/30 text-error text-[11px] font-mono">
+            {downloadError}
+          </div>
+        )}
       </header>
 
       {/* Workspace */}

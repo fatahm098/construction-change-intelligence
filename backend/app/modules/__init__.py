@@ -14,7 +14,7 @@ from __future__ import annotations
 from fastapi import APIRouter
 
 from .change_intel.router import routers as _change_intel_routers
-from .doc_qa.router import router as _doc_qa_router
+from .doc_qa.router import routers as _doc_qa_routers
 from .boq_rab.router import router as _boq_rab_router
 from .auth.router import routers as _auth_routers
 from .jobs.router import routers as _jobs_routers
@@ -27,7 +27,7 @@ from .settings.router import routers as _settings_routers
 
 _MODULE_ROUTERS: list[APIRouter] = [
     *_change_intel_routers,
-    _doc_qa_router,
+    *_doc_qa_routers,
     _boq_rab_router,
     *_auth_routers,
     *_jobs_routers,

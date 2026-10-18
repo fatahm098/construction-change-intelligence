@@ -1,6 +1,7 @@
 # Docker Compose — production-ish stack.
 # Jalankan: docker compose -f docker-compose.prod.yml up -d --build
-# Prasyarat: salin `.env.example` -> `.env` dan isi nilai produksi (API key, JWT, dsb).
+# Prasyarat: salin `.env.example` -> `.env` dan isi nilai produksi.
+# Lihat DEPLOY.md untuk langkah lengkap.
 #
 # File ini terpisah dari `docker-compose.yml` (dev) agar alur pengembangan tidak terganggu.
 
@@ -51,6 +52,12 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-construction_db}
       REDIS_URL: redis://redis:6379/0
       JOBS_ENABLED: "true"
+      # Auth WAJIB aktif di produksi. Nilai ini menimpa AUTH_ENABLED dari .env.
+      AUTH_ENABLED: "true"
+      # Tanpa default: compose gagal start bila kosong/tidak di-set.
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET wajib diisi - lihat DEPLOY.md}
+      SETTINGS_ENCRYPTION_KEY: ${SETTINGS_ENCRYPTION_KEY:?SETTINGS_ENCRYPTION_KEY wajib diisi - lihat DEPLOY.md}
+      LLM_PROVIDER: deepseek
     ports:
       - "8000:8000"
     volumes:
@@ -76,7 +83,7 @@ services:
       args:
         # Di-inline saat build; sesuaikan dengan URL backend yang dapat diakses browser.
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
-        NEXT_PUBLIC_AUTH_ENABLED: ${NEXT_PUBLIC_AUTH_ENABLED:-false}
+        NEXT_PUBLIC_AUTH_ENABLED: ${NEXT_PUBLIC_AUTH_ENABLED:-true}
     container_name: construction-change-frontend
     restart: unless-stopped
     environment:

@@ -16,6 +16,7 @@ import {
   updateInspectionItem,
   fetchQCSummary,
 } from "@/lib/api";
+import { downloadReport } from "@/lib/reports";
 import {
   ClipboardCheck,
   Plus,
@@ -23,6 +24,7 @@ import {
   ChevronDown,
   ChevronRight,
   Trash2,
+  Download,
 } from "lucide-react";
 
 const formatPct = (val: number) => `${val.toFixed(1)}%`;
@@ -108,6 +110,8 @@ export default function QCPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [updatingItemId, setUpdatingItemId] = useState<number | null>(null);
 
@@ -156,6 +160,19 @@ export default function QCPage() {
   useEffect(() => {
     if (projectId != null) loadData(projectId);
   }, [projectId]);
+
+  const handleDownloadQc = async () => {
+    if (projectId == null) return;
+    setDownloading(true);
+    setDownloadError(null);
+    try {
+      await downloadReport(projectId, "qc", "xlsx");
+    } catch (err) {
+      setDownloadError(err instanceof Error ? err.message : "Gagal mengunduh laporan QC.");
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -267,6 +284,15 @@ export default function QCPage() {
               ))}
             </select>
 
+            <button
+              onClick={handleDownloadQc}
+              disabled={downloading || projectId == null}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-primary-container/20 hover:bg-primary-container/30 text-primary text-xs font-medium transition-colors border border-primary/30 disabled:opacity-50"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>{downloading ? "Menyiapkan…" : "Unduh QC (Excel)"}</span>
+            </button>
+
             {summary && (
               <div className="flex items-center gap-1.5 px-3 py-1 rounded bg-secondary/10 border border-secondary/20">
                 <span className="font-mono text-[10px] text-secondary">Pass Rate</span>
@@ -293,6 +319,12 @@ export default function QCPage() {
         {error && (
           <div className="px-4 py-2 rounded-lg bg-error-container/30 border border-error/30 text-error text-xs font-mono">
             {error}
+          </div>
+        )}
+
+        {downloadError && (
+          <div className="px-4 py-2 rounded-lg bg-error-container/30 border border-error/30 text-error text-xs font-mono">
+            {downloadError}
           </div>
         )}
 

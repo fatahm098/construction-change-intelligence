@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from .database import SessionLocal, engine, Base
+from .kernel.auth import AuthGateMiddleware
 from .kernel.config import settings
 from .kernel.observability import RequestContextMiddleware, setup_logging
 from .kernel.observability.health import readiness
@@ -52,6 +53,10 @@ app = FastAPI(
     description="Sistem analisis perubahan gambar teknik konstruksi & estimasi dampak biaya deterministik.",
     lifespan=lifespan,
 )
+
+# Gerbang auth global — aktif hanya bila AUTH_ENABLED=true. Ditambahkan sebelum
+# CORS agar posisinya di dalam CORS (respons 401 tetap membawa header CORS).
+app.add_middleware(AuthGateMiddleware)
 
 # CORS Middleware — allowlist dari env CORS_ORIGINS
 app.add_middleware(

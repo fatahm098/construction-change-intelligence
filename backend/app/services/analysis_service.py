@@ -19,13 +19,46 @@ from ..models import (
     Project,
     RegionStatus,
 )
-from .ocr_service import extract_text_and_dimensions
+from .ocr_service import extract_text_and_candidates
 from .vision_service import align_drawings_sift, detect_changed_regions
 
 OUTPUT_ROOT = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "..", "..", "data", "analysis_runs")
 )
 os.makedirs(OUTPUT_ROOT, exist_ok=True)
+
+
+def _format_dims(dims) -> str | None:
+    return f"{dims[0]}x{dims[1]}" if dims else None
+
+
+def _select_region_dimensions(candidates_v0: list[dict], candidates_v1: list[dict]):
+    """Pilih dimensi v0/v1 yang paling relevan untuk satu region.
+
+    Prioritas: pasangan yang berubah antar revisi (skor = confidence gabungan).
+    Bila tidak ada perubahan, pakai kandidat confidence tertinggi dari v1.
+    """
+    best = None
+    for c0 in candidates_v0:
+        for c1 in candidates_v1:
+            if c0["dims"] == c1["dims"]:
+                continue
+            score = c0["confidence"] + c1["confidence"]
+            if best is None or score > best[0]:
+                best = (score, c0["dims"], c1["dims"])
+
+    if best is not None:
+        return best[1], best[2]
+
+    if candidates_v1:
+        dims = max(candidates_v1, key=lambda c: c["confidence"])["dims"]
+        return dims, dims
+
+    if candidates_v0:
+        dims = max(candidates_v0, key=lambda c: c["confidence"])["dims"]
+        return dims, None
+
+    return None, None
 
 
 def run_analysis(
@@ -83,11 +116,12 @@ def run_analysis(
 
     # 3. Ekstraksi OCR per region
     for r in regions_detected:
-        text_v0, dims_v0 = extract_text_and_dimensions(r["crop_v0"])
-        text_v1, dims_v1 = extract_text_and_dimensions(r["crop_v1"])
+        text_v0, candidates_v0 = extract_text_and_candidates(r["crop_v0"])
+        text_v1, candidates_v1 = extract_text_and_candidates(r["crop_v1"])
 
-        dim_str_v0 = f"{dims_v0[0]}x{dims_v0[1]}" if dims_v0 else None
-        dim_str_v1 = f"{dims_v1[0]}x{dims_v1[1]}" if dims_v1 else None
+        dims_v0, dims_v1 = _select_region_dimensions(candidates_v0, candidates_v1)
+        dim_str_v0 = _format_dims(dims_v0)
+        dim_str_v1 = _format_dims(dims_v1)
 
         bx, by, bw, bh = r["bbox"]
         db.add(

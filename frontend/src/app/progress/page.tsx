@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from "react";
 import { ProgressSummary, ProgressPoint, Project } from "@/lib/types";
 import { fetchProjects, fetchProgress, createProgressEntry } from "@/lib/api";
-import { TrendingUp, Plus, RefreshCw, Activity } from "lucide-react";
+import { downloadReport } from "@/lib/reports";
+import { TrendingUp, Plus, RefreshCw, Activity, Download } from "lucide-react";
 
 const formatIDR = (val: number) =>
   new Intl.NumberFormat("id-ID", {
@@ -133,6 +134,8 @@ export default function ProgressPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
 
   // Entry form state
   const [period, setPeriod] = useState("");
@@ -172,6 +175,19 @@ export default function ProgressPage() {
   useEffect(() => {
     if (projectId != null) loadProgress(projectId);
   }, [projectId]);
+
+  const handleDownloadEvm = async () => {
+    if (projectId == null) return;
+    setDownloading(true);
+    setDownloadError(null);
+    try {
+      await downloadReport(projectId, "evm", "xlsx");
+    } catch (err) {
+      setDownloadError(err instanceof Error ? err.message : "Gagal mengunduh laporan EVM.");
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -236,6 +252,15 @@ export default function ProgressPage() {
               ))}
             </select>
 
+            <button
+              onClick={handleDownloadEvm}
+              disabled={downloading || projectId == null}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-primary-container/20 hover:bg-primary-container/30 text-primary text-xs font-medium transition-colors border border-primary/30 disabled:opacity-50"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>{downloading ? "Menyiapkan…" : "Unduh EVM (Excel)"}</span>
+            </button>
+
             {summary && (
               <div className="flex items-center gap-1.5 px-3 py-1 rounded bg-secondary/10 border border-secondary/20">
                 <Activity className="w-3.5 h-3.5 text-secondary" />
@@ -262,6 +287,12 @@ export default function ProgressPage() {
         {error && (
           <div className="px-4 py-2 rounded-lg bg-error-container/30 border border-error/30 text-error text-xs font-mono">
             {error}
+          </div>
+        )}
+
+        {downloadError && (
+          <div className="px-4 py-2 rounded-lg bg-error-container/30 border border-error/30 text-error text-xs font-mono">
+            {downloadError}
           </div>
         )}
 

@@ -43,6 +43,13 @@ class Settings(BaseSettings):
     # Base URL untuk provider OpenAI-compatible (default DeepSeek).
     # Untuk ollama, pakai ollama_base_url.
     llm_base_url: str = "https://api.deepseek.com/v1"
+
+    # Provider embedding terpisah dari LLM chat. "hash" = offline (default),
+    # "openai" = endpoint OpenAI-compatible sungguhan (embedding semantik).
+    embedding_provider: str = "hash"
+    embedding_base_url: str = "https://api.openai.com/v1"
+    embedding_model: str = "text-embedding-3-small"
+    embedding_api_key: str | None = None
     ollama_base_url: str = "http://localhost:11434"
     openai_api_key: str | None = None
     deepseek_api_key: str | None = None
