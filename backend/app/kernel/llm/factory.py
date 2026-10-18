@@ -52,7 +52,11 @@ def get_llm_provider() -> LLMProvider:
 
     if provider == "openai":
         if not cfg["api_key"]:
-            raise ValueError("OPENAI_API_KEY belum diisi (env atau halaman Pengaturan).")
+            raise ValueError(
+                "API key untuk provider 'openai' belum tersimpan. Buka halaman "
+                "Pengaturan, isi API Key, lalu klik Simpan (atau set OPENAI_API_KEY "
+                "di .env bila memakai endpoint OpenAI-compatible lain)."
+            )
         return OpenAIProvider(
             api_key=cfg["api_key"],
             model=cfg["model"],
@@ -63,7 +67,9 @@ def get_llm_provider() -> LLMProvider:
     if provider == "deepseek":
         if not cfg["api_key"]:
             raise ValueError(
-                "DEEPSEEK_API_KEY belum diisi (env atau halaman Pengaturan)."
+                "API key untuk provider 'deepseek' belum tersimpan. Buka halaman "
+                "Pengaturan, isi API Key, lalu klik Simpan (atau set DEEPSEEK_API_KEY "
+                "di .env)."
             )
         return DeepSeekProvider(
             api_key=cfg["api_key"],
