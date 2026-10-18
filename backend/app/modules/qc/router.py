@@ -11,6 +11,7 @@ from ...schemas.qc import (
     InspectionItemResponse,
     InspectionItemUpdate,
     InspectionResponse,
+    InspectionStatusUpdate,
     QCSummaryResponse,
 )
 from .service import (
@@ -18,6 +19,7 @@ from .service import (
     create_inspection,
     get_inspection,
     list_inspections,
+    set_inspection_status,
     update_inspection_item,
 )
 
@@ -60,5 +62,16 @@ def patch_inspection_item(
     """Perbarui hasil dan/atau catatan sebuah butir pemeriksaan."""
     try:
         return update_inspection_item(db, item_id, payload)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+
+@router.patch("/api/qc/inspection/{inspection_id}/status", response_model=InspectionResponse)
+def patch_inspection_status(
+    inspection_id: int, payload: InspectionStatusUpdate, db: Session = Depends(get_db)
+):
+    """Finalisasi status inspeksi setelah seluruh butir diperiksa."""
+    try:
+        return set_inspection_status(db, inspection_id, payload.status)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))

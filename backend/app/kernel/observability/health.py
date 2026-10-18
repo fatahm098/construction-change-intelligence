@@ -27,17 +27,34 @@ def check_database() -> dict[str, Any]:
 
 
 def check_llm() -> dict[str, Any]:
-    """Laporkan apakah provider LLM terkonfigurasi (tanpa panggilan jaringan)."""
+    """Laporkan provider LLM efektif (DB > env) tanpa panggilan jaringan."""
     provider = (settings.llm_provider or "").lower()
+    base_url = settings.ollama_base_url
+    has_key = bool(settings.deepseek_api_key or settings.openai_api_key)
 
-    if provider == "ollama":
-        configured = bool(settings.ollama_base_url)
-    elif provider == "deepseek":
-        configured = bool(settings.deepseek_api_key or settings.openai_api_key)
-    elif provider == "openai":
-        configured = bool(settings.openai_api_key)
+    # Halaman Pengaturan menyimpan pilihan provider di DB; readiness harus
+    # mencerminkan konfigurasi yang benar-benar dipakai, bukan default env.
+    try:
+        from ...database import SessionLocal
+        from ..settings_store import effective_settings
+
+        db = SessionLocal()
+        try:
+            cfg = effective_settings(db)
+        finally:
+            db.close()
+        provider = (cfg.get("provider") or provider).lower()
+        base_url = cfg.get("base_url") or base_url
+        has_key = bool(cfg.get("has_api_key"))
+    except Exception:  # noqa: BLE001 — DB belum siap → pakai env
+        pass
+
+    if provider == "local":
+        configured = True
+    elif provider == "ollama":
+        configured = bool(base_url)
     else:
-        configured = False
+        configured = has_key
 
     return {"provider": provider, "configured": configured}
 

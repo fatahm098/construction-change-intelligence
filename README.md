@@ -249,7 +249,7 @@ curl -X POST http://localhost:8000/api/doc-qa/reindex \
 | Reindex | `POST /api/doc-qa/reindex` | Hitung ulang embedding korpus |
 | Progress | `GET/POST /api/progress/{id}/entries` | EVM |
 | VO / RFI | `GET/POST /api/vo/{id}`, `POST /api/rfi/{id}/answer` | Perubahan & pertanyaan |
-| QC | `GET/POST /api/qc/{id}`, `PATCH /api/qc/item/{id}` | Inspeksi mutu |
+| QC | `GET/POST /api/qc/{id}`, `PATCH /api/qc/item/{id}`, `PATCH /api/qc/inspection/{id}/status` | Inspeksi mutu + finalisasi lulus/gagal |
 | K3 | `GET/POST /api/k3/{id}`, `PATCH /api/k3/{id}/status` | Laporan keselamatan |
 | Reports | `GET /api/reports/{rab,evm,qc}/{id}.xlsx`, `GET /api/reports/rab/{id}.pdf` | Unduhan |
 | Settings | `GET/PUT /api/settings/llm`, `POST /api/settings/llm/test` | API key terenkripsi |

@@ -14,6 +14,7 @@ import {
   fetchInspections,
   createInspection,
   updateInspectionItem,
+  updateInspectionStatus,
   fetchQCSummary,
 } from "@/lib/api";
 import { downloadReport } from "@/lib/reports";
@@ -114,6 +115,7 @@ export default function QCPage() {
   const [downloadError, setDownloadError] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [updatingItemId, setUpdatingItemId] = useState<number | null>(null);
+  const [finalizingId, setFinalizingId] = useState<number | null>(null);
 
   // Create form state
   const [inspectionNumber, setInspectionNumber] = useState("");
@@ -171,6 +173,18 @@ export default function QCPage() {
       setDownloadError(err instanceof Error ? err.message : "Gagal mengunduh laporan QC.");
     } finally {
       setDownloading(false);
+    }
+  };
+
+  const handleFinalize = async (inspectionId: number, status: InspectionStatus) => {
+    setFinalizingId(inspectionId);
+    try {
+      await updateInspectionStatus(inspectionId, status);
+      if (projectId != null) await loadData(projectId);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Gagal memperbarui status inspeksi.");
+    } finally {
+      setFinalizingId(null);
     }
   };
 
@@ -454,6 +468,24 @@ export default function QCPage() {
                           <p className="text-[11px] text-on-surface-variant/50 font-sans">
                             Tidak ada item checklist.
                           </p>
+                        )}
+                        {insp.status === "draft" && (
+                          <div className="flex items-center gap-2 pt-1">
+                            <button
+                              onClick={() => handleFinalize(insp.id, "passed")}
+                              disabled={finalizingId === insp.id}
+                              className="px-2.5 py-1 rounded bg-tertiary/15 hover:bg-tertiary/25 text-tertiary text-[10px] font-medium border border-tertiary/30 disabled:opacity-50"
+                            >
+                              Tandai Lulus
+                            </button>
+                            <button
+                              onClick={() => handleFinalize(insp.id, "failed")}
+                              disabled={finalizingId === insp.id}
+                              className="px-2.5 py-1 rounded bg-error/15 hover:bg-error/25 text-error text-[10px] font-medium border border-error/30 disabled:opacity-50"
+                            >
+                              Tandai Tidak Lulus
+                            </button>
+                          </div>
                         )}
                       </div>
                     )}

@@ -24,6 +24,7 @@ node_modules/
 *.log
 backend/data/analysis_runs/
 backend/data/uploads/
+backend/data/documents/
 backend/data/_test_*
 
 # Environment

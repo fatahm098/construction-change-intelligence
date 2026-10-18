@@ -81,6 +81,20 @@ def update_inspection_item(
     return InspectionItemResponse.model_validate(item)
 
 
+def set_inspection_status(
+    db: Session, inspection_id: int, status: InspectionStatus
+) -> InspectionResponse:
+    """Finalisasi status inspeksi (draft → passed/failed)."""
+    inspection = db.query(Inspection).filter(Inspection.id == inspection_id).first()
+    if not inspection:
+        raise ValueError("Inspection not found")
+
+    inspection.status = status
+    db.commit()
+    db.refresh(inspection)
+    return InspectionResponse.model_validate(inspection)
+
+
 def compute_qc_summary(db: Session, project_id: int) -> QCSummaryResponse:
     """Rekap mutu proyek: jumlah inspeksi per status, pass rate, dan butir tidak OK."""
     inspections = db.query(Inspection).filter(Inspection.project_id == project_id).all()

@@ -55,6 +55,10 @@ class InspectionResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class InspectionStatusUpdate(BaseModel):
+    status: InspectionStatus
+
+
 class QCSummaryResponse(BaseModel):
     project_id: int
     total: int

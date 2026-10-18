@@ -3,6 +3,7 @@ import type {
   Inspection,
   InspectionCategory,
   InspectionItem,
+  InspectionStatus,
   Job,
   JobEnqueueResponse,
   LLMSettings,
@@ -93,31 +94,31 @@ async function ensureOk(res: Response, fallback: string): Promise<void> {
 }
 
 export async function fetchProjects() {
-  const res = await fetch(`${API_BASE}/api/projects`, { cache: "no-store" });
+  const res = await authFetch(`${API_BASE}/api/projects`, { cache: "no-store" });
   if (!res.ok) throw new Error("Gagal mengambil daftar proyek");
   return res.json();
 }
 
 export async function fetchProjectSummary(projectId: number) {
-  const res = await fetch(`${API_BASE}/api/projects/${projectId}/summary`, { cache: "no-store" });
+  const res = await authFetch(`${API_BASE}/api/projects/${projectId}/summary`, { cache: "no-store" });
   if (!res.ok) throw new Error("Gagal mengambil ringkasan proyek");
   return res.json();
 }
 
 export async function fetchAnalysisRun(runId: number) {
-  const res = await fetch(`${API_BASE}/api/analysis/${runId}`, { cache: "no-store" });
+  const res = await authFetch(`${API_BASE}/api/analysis/${runId}`, { cache: "no-store" });
   if (!res.ok) throw new Error("Gagal mengambil detail analisis");
   return res.json();
 }
 
 export async function fetchLatestAnalysisRun(projectId: number) {
-  const res = await fetch(`${API_BASE}/api/analysis/by-project/${projectId}`, { cache: "no-store" });
+  const res = await authFetch(`${API_BASE}/api/analysis/by-project/${projectId}`, { cache: "no-store" });
   if (!res.ok) throw new Error("Gagal mengambil analisis terbaru");
   return res.json();
 }
 
 export async function fetchProjectBOQ(projectId: number) {
-  const res = await fetch(`${API_BASE}/api/boq/by-project/${projectId}`, { cache: "no-store" });
+  const res = await authFetch(`${API_BASE}/api/boq/by-project/${projectId}`, { cache: "no-store" });
   if (!res.ok) throw new Error("Gagal mengambil data BOQ");
   return res.json();
 }
@@ -131,7 +132,7 @@ export async function verifyDimension(regionId: number, data: {
   height_or_length_m: number;
   link_boq_item_id?: number | null;
 }) {
-  const res = await fetch(`${API_BASE}/api/analysis/region/${regionId}/verify`, {
+  const res = await authFetch(`${API_BASE}/api/analysis/region/${regionId}/verify`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
@@ -141,7 +142,7 @@ export async function verifyDimension(regionId: number, data: {
 }
 
 export async function rejectRegion(regionId: number) {
-  const res = await fetch(`${API_BASE}/api/analysis/region/${regionId}/reject`, {
+  const res = await authFetch(`${API_BASE}/api/analysis/region/${regionId}/reject`, {
     method: "POST",
   });
   if (!res.ok) throw new Error("Gagal menolak region");
@@ -168,7 +169,7 @@ export function dataPathToUrl(absolutePath: string | undefined | null): string |
 // --- Document Q&A ---
 
 export async function fetchDocuments(projectId: number) {
-  const res = await fetch(`${API_BASE}/api/projects/${projectId}/documents`, { cache: "no-store" });
+  const res = await authFetch(`${API_BASE}/api/projects/${projectId}/documents`, { cache: "no-store" });
   if (!res.ok) throw new Error("Gagal mengambil daftar dokumen");
   return res.json();
 }
@@ -177,7 +178,7 @@ export async function uploadDocument(projectId: number, file: File, docType: str
   const form = new FormData();
   form.append("file", file);
   form.append("doc_type", docType);
-  const res = await fetch(`${API_BASE}/api/projects/${projectId}/documents`, {
+  const res = await authFetch(`${API_BASE}/api/projects/${projectId}/documents`, {
     method: "POST",
     body: form,
   });
@@ -189,7 +190,7 @@ export async function uploadDocument(projectId: number, file: File, docType: str
 }
 
 export async function sendChat(projectId: number, question: string, topK = 5) {
-  const res = await fetch(`${API_BASE}/api/projects/${projectId}/chat`, {
+  const res = await authFetch(`${API_BASE}/api/projects/${projectId}/chat`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ question, top_k: topK }),
@@ -204,25 +205,25 @@ export async function sendChat(projectId: number, question: string, topK = 5) {
 // --- BOQ & RAB (AHSP) ---
 
 export async function fetchRAB(projectId: number) {
-  const res = await fetch(`${API_BASE}/api/rab/${projectId}`, { cache: "no-store" });
+  const res = await authFetch(`${API_BASE}/api/rab/${projectId}`, { cache: "no-store" });
   if (!res.ok) throw new Error("Gagal mengambil data RAB");
   return res.json();
 }
 
 export async function fetchAHSPList() {
-  const res = await fetch(`${API_BASE}/api/ahsp`, { cache: "no-store" });
+  const res = await authFetch(`${API_BASE}/api/ahsp`, { cache: "no-store" });
   if (!res.ok) throw new Error("Gagal mengambil katalog AHSP");
   return res.json();
 }
 
 export async function fetchAHSPDetail(ahspId: number) {
-  const res = await fetch(`${API_BASE}/api/ahsp/${ahspId}`, { cache: "no-store" });
+  const res = await authFetch(`${API_BASE}/api/ahsp/${ahspId}`, { cache: "no-store" });
   if (!res.ok) throw new Error("Gagal mengambil detail AHSP");
   return res.json();
 }
 
 export async function suggestBOQ(regionId: number) {
-  const res = await fetch(`${API_BASE}/api/boq/suggest/${regionId}`, { cache: "no-store" });
+  const res = await authFetch(`${API_BASE}/api/boq/suggest/${regionId}`, { cache: "no-store" });
   if (!res.ok) throw new Error("Gagal mengambil rekomendasi BOQ");
   return res.json();
 }
@@ -231,7 +232,7 @@ export async function uploadBOQ(projectId: number, file: File) {
   const form = new FormData();
   form.append("project_id", String(projectId));
   form.append("file", file);
-  const res = await fetch(`${API_BASE}/api/boq/upload`, { method: "POST", body: form });
+  const res = await authFetch(`${API_BASE}/api/boq/upload`, { method: "POST", body: form });
   if (!res.ok) {
     const detail = await res.json().catch(() => ({}));
     throw new Error(detail.detail || "Gagal mengunggah BOQ");
@@ -242,7 +243,7 @@ export async function uploadBOQ(projectId: number, file: File) {
 // --- Fase 4: Auth ---
 
 export async function login(payload: LoginRequest): Promise<TokenResponse> {
-  const res = await fetch(`${API_BASE}/api/auth/login`, {
+  const res = await authFetch(`${API_BASE}/api/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
@@ -256,7 +257,7 @@ export async function login(payload: LoginRequest): Promise<TokenResponse> {
 }
 
 export async function register(payload: RegisterRequest): Promise<User> {
-  const res = await fetch(`${API_BASE}/api/auth/register`, {
+  const res = await authFetch(`${API_BASE}/api/auth/register`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
@@ -315,7 +316,7 @@ export async function fetchJob(jobId: number): Promise<Job> {
 // --- Fase 5: Progress & EVM ---
 
 export async function fetchProgress(projectId: number): Promise<ProgressSummary> {
-  const res = await fetch(`${API_BASE}/api/progress/${projectId}`, { cache: "no-store" });
+  const res = await authFetch(`${API_BASE}/api/progress/${projectId}`, { cache: "no-store" });
   if (!res.ok) throw new Error("Gagal mengambil data progress & EVM");
   return res.json();
 }
@@ -332,7 +333,7 @@ export async function createProgressEntry(
   projectId: number,
   data: ProgressEntryPayload,
 ): Promise<ProgressEntry> {
-  const res = await fetch(`${API_BASE}/api/progress/${projectId}/entries`, {
+  const res = await authFetch(`${API_BASE}/api/progress/${projectId}/entries`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
@@ -346,7 +347,7 @@ export async function createProgressEntry(
 // --- Fase 5: Variation Order & RFI ---
 
 export async function fetchVOs(projectId: number): Promise<VariationOrder[]> {
-  const res = await fetch(`${API_BASE}/api/vo/${projectId}`, { cache: "no-store" });
+  const res = await authFetch(`${API_BASE}/api/vo/${projectId}`, { cache: "no-store" });
   if (!res.ok) throw new Error("Gagal mengambil daftar variation order");
   return res.json();
 }
@@ -360,7 +361,7 @@ export interface VOCreatePayload {
 }
 
 export async function createVO(projectId: number, data: VOCreatePayload): Promise<VariationOrder> {
-  const res = await fetch(`${API_BASE}/api/vo/${projectId}`, {
+  const res = await authFetch(`${API_BASE}/api/vo/${projectId}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
@@ -372,7 +373,7 @@ export async function createVO(projectId: number, data: VOCreatePayload): Promis
 }
 
 export async function updateVOStatus(voId: number, status: VOStatus): Promise<VariationOrder> {
-  const res = await fetch(`${API_BASE}/api/vo/${voId}/status`, {
+  const res = await authFetch(`${API_BASE}/api/vo/${voId}/status`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ status }),
@@ -384,7 +385,7 @@ export async function updateVOStatus(voId: number, status: VOStatus): Promise<Va
 }
 
 export async function fetchRFIs(projectId: number): Promise<RFI[]> {
-  const res = await fetch(`${API_BASE}/api/rfi/${projectId}`, { cache: "no-store" });
+  const res = await authFetch(`${API_BASE}/api/rfi/${projectId}`, { cache: "no-store" });
   if (!res.ok) throw new Error("Gagal mengambil daftar RFI");
   return res.json();
 }
@@ -397,7 +398,7 @@ export interface RFICreatePayload {
 }
 
 export async function createRFI(projectId: number, data: RFICreatePayload): Promise<RFI> {
-  const res = await fetch(`${API_BASE}/api/rfi/${projectId}`, {
+  const res = await authFetch(`${API_BASE}/api/rfi/${projectId}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
@@ -409,7 +410,7 @@ export async function createRFI(projectId: number, data: RFICreatePayload): Prom
 }
 
 export async function answerRFI(rfiId: number, answer: string): Promise<RFI> {
-  const res = await fetch(`${API_BASE}/api/rfi/${rfiId}/answer`, {
+  const res = await authFetch(`${API_BASE}/api/rfi/${rfiId}/answer`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ answer }),
@@ -423,7 +424,7 @@ export async function answerRFI(rfiId: number, answer: string): Promise<RFI> {
 // --- QC / Mutu ---
 
 export async function fetchInspections(projectId: number): Promise<Inspection[]> {
-  const res = await fetch(`${API_BASE}/api/qc/${projectId}`, { cache: "no-store" });
+  const res = await authFetch(`${API_BASE}/api/qc/${projectId}`, { cache: "no-store" });
   if (!res.ok) throw new Error("Gagal mengambil daftar inspeksi");
   return res.json();
 }
@@ -450,7 +451,7 @@ export async function createInspection(
   projectId: number,
   data: InspectionCreatePayload,
 ): Promise<Inspection> {
-  const res = await fetch(`${API_BASE}/api/qc/${projectId}`, {
+  const res = await authFetch(`${API_BASE}/api/qc/${projectId}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
@@ -462,7 +463,7 @@ export async function createInspection(
 }
 
 export async function fetchInspection(inspectionId: number): Promise<Inspection> {
-  const res = await fetch(`${API_BASE}/api/qc/inspection/${inspectionId}`, { cache: "no-store" });
+  const res = await authFetch(`${API_BASE}/api/qc/inspection/${inspectionId}`, { cache: "no-store" });
   if (!res.ok) throw new Error("Gagal mengambil detail inspeksi");
   return res.json();
 }
@@ -476,7 +477,7 @@ export async function updateInspectionItem(
   itemId: number,
   data: InspectionItemUpdatePayload,
 ): Promise<InspectionItem> {
-  const res = await fetch(`${API_BASE}/api/qc/item/${itemId}`, {
+  const res = await authFetch(`${API_BASE}/api/qc/item/${itemId}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
@@ -487,8 +488,23 @@ export async function updateInspectionItem(
   return res.json();
 }
 
+export async function updateInspectionStatus(
+  inspectionId: number,
+  status: InspectionStatus,
+): Promise<Inspection> {
+  const res = await authFetch(`${API_BASE}/api/qc/inspection/${inspectionId}/status`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status }),
+  });
+  if (!res.ok) {
+    throw new Error(await readError(res, "Gagal memperbarui status inspeksi"));
+  }
+  return res.json();
+}
+
 export async function fetchQCSummary(projectId: number): Promise<QCSummary> {
-  const res = await fetch(`${API_BASE}/api/qc/summary/${projectId}`, { cache: "no-store" });
+  const res = await authFetch(`${API_BASE}/api/qc/summary/${projectId}`, { cache: "no-store" });
   if (!res.ok) throw new Error("Gagal mengambil ringkasan QC");
   return res.json();
 }
@@ -496,7 +512,7 @@ export async function fetchQCSummary(projectId: number): Promise<QCSummary> {
 // --- K3 / Safety ---
 
 export async function fetchSafetyReports(projectId: number): Promise<SafetyReport[]> {
-  const res = await fetch(`${API_BASE}/api/k3/${projectId}`, { cache: "no-store" });
+  const res = await authFetch(`${API_BASE}/api/k3/${projectId}`, { cache: "no-store" });
   if (!res.ok) throw new Error("Gagal mengambil daftar laporan K3");
   return res.json();
 }
@@ -516,7 +532,7 @@ export async function createSafetyReport(
   projectId: number,
   data: SafetyReportCreatePayload,
 ): Promise<SafetyReport> {
-  const res = await fetch(`${API_BASE}/api/k3/${projectId}`, {
+  const res = await authFetch(`${API_BASE}/api/k3/${projectId}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
@@ -531,7 +547,7 @@ export async function updateSafetyReportStatus(
   reportId: number,
   status: SafetyStatus,
 ): Promise<SafetyReport> {
-  const res = await fetch(`${API_BASE}/api/k3/${reportId}/status`, {
+  const res = await authFetch(`${API_BASE}/api/k3/${reportId}/status`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ status }),
@@ -543,7 +559,7 @@ export async function updateSafetyReportStatus(
 }
 
 export async function fetchSafetySummary(projectId: number): Promise<SafetySummary> {
-  const res = await fetch(`${API_BASE}/api/k3/summary/${projectId}`, { cache: "no-store" });
+  const res = await authFetch(`${API_BASE}/api/k3/summary/${projectId}`, { cache: "no-store" });
   if (!res.ok) throw new Error("Gagal mengambil ringkasan K3");
   return res.json();
 }
