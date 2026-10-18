@@ -123,7 +123,7 @@ construction-change-intelligence/
 │   │   └── services/               # pdf, vision, ocr, calc, boq, ahsp_seed
 │   ├── migrations/                 # Alembic
 │   ├── tests/                      # pytest (23 test)
-│   ├── scripts/                    # seed_ahsp.py, test_rag.py (manual)
+│   ├── scripts/                    # seed_demo.py, seed_ahsp.py, test_rag.py (manual)
 │   ├── data/reference/             # PDF regulasi (tidak di-commit, ~45 MB)
 │   ├── pytest.ini  ruff.toml  Dockerfile  requirements.txt
 ├── frontend/
@@ -186,6 +186,32 @@ LLM_PROVIDER=local
 
 API key juga bisa diisi lewat halaman **Pengaturan** di UI (disimpan terenkripsi di DB
 dan mengalahkan nilai `.env`). Restart backend setelah mengubah `.env`.
+
+### Demo cepat (data contoh sekali jalan)
+
+Setelah backend dan frontend hidup:
+
+```bash
+cd backend
+./.venv/Scripts/python.exe scripts/seed_demo.py
+```
+
+Script ini membuat proyek **"Gedung Kantor 2 Lantai — Demo"** berisi data di semua
+modul, memakai file dari `samples/`:
+
+| Modul | Isi demo |
+|---|---|
+| BOQ/RAB | 29 item, total Rp 907.992.000 |
+| Change Intelligence | 12 region dari denah rev A vs rev B; region terbesar terverifikasi kolom 300×300 → 400×400 |
+| Cost impact | Rp 477.750 dari volume 0,315 → 0,560 m³ × harga satuan BOQ |
+| VO / RFI | VO-001 (submitted) dan RFI-001 yang sudah dijawab |
+| Progress / EVM | 2 periode (Feb–Mar 2026) |
+| QC | 2 inspeksi: satu gagal (selimut beton), satu lulus → pass rate 50% |
+| K3 | 1 laporan *unsafe act* severity tinggi |
+| Doc Q&A | RKS 7 pasal terindeks, siap ditanya dengan sitasi halaman |
+
+Script bersifat idempoten: kalau proyek demo sudah ada, tidak ada yang diubah.
+Untuk memulai dari nol, hapus proyek demo lewat UI lalu jalankan ulang.
 
 ---
 
